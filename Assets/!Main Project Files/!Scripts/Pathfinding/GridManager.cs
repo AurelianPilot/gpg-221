@@ -32,7 +32,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             float actualNodeSize = nodeSize + nodeSpacing;
             float startX = transform.position.x - (width * actualNodeSize / 2);
-            float startZ = transform.position.z - (height * actualNodeSize / 2);
+            // Setting this to a sum so the instantiation starts at the top left (personal preference).
+            float startZ = transform.position.z + (height * actualNodeSize / 2); 
 
             GameObject nodesParent = new GameObject("Nodes");
             nodesParent.transform.parent = transform;
@@ -45,7 +46,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 Vector3 nodePosition = new Vector3(
                     startX + (x * actualNodeSize),
                     transform.position.y,
-                    startZ + (z * actualNodeSize)
+                    // Setting this to a substraction so the instantiation starts at the top left (personal preference).
+                    startZ - (z * actualNodeSize)
                 );
 
                 Node newNode = CreateNode(nodePosition, nodesParent.transform);

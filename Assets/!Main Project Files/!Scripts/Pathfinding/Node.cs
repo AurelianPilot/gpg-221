@@ -1,4 +1,5 @@
 using System;
+using System.Net.Cache;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -45,16 +46,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             _meshRenderer.material.color = newColor;
 
             gCostText.text = $"G: {GCost:F1}";
-            gCostText.text = $"H: {HCost:F1}";
-            gCostText.text = $"F: {FCost:F1}";
-        }
-
-        public Node(Vector3 pos, bool walkable = true)
-        {
-            Position = pos;
-            Walkable = walkable;
-            GCost = float.MaxValue;
-            HCost = 0;
+            hCostText.text = $"H: {HCost:F1}";
+            fCostText.text = $"F: {FCost:F1}";
         }
     }
 }

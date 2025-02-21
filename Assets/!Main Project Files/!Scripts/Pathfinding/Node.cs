@@ -6,7 +6,7 @@ using UnityEngine.Serialization;
 
 namespace _Main_Project_Files._Scripts.Pathfinding
 {
-    public class Node : MonoBehaviour
+    public class Node : MonoBehaviour, IComparable
     {
         [Header("- Node Properties")]
         public Vector3 Position { get; set; }
@@ -48,6 +48,11 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             gCostText.text = $"G: {GCost:F1}";
             hCostText.text = $"H: {HCost:F1}";
             fCostText.text = $"F: {FCost:F1}";
+        }
+
+        public int CompareTo(object obj)
+        {
+            throw new NotImplementedException();
         }
     }
 }

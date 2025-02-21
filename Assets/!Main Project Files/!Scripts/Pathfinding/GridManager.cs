@@ -2,6 +2,7 @@ using System;
 using NUnit.Framework.Internal.Execution;
 using Unity.Android.Gradle;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,13 +10,14 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 {
     public class GridManager : MonoBehaviour
     {
-        [Header("- Grid Settings")] 
-        [SerializeField] private Node nodePrefab;
+        [Header("- Grid Settings")] [SerializeField]
+        private Node nodePrefab;
+
         [SerializeField] private int width = 10;
         [SerializeField] private int height = 10;
         [SerializeField] private float nodeSize = 1f;
         [SerializeField] private float nodeSpacing = 0.1f;
-        
+
         [Header("- Grid Debug")] [SerializeField]
         private bool isDebug = true;
 
@@ -33,7 +35,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             float actualNodeSize = nodeSize + nodeSpacing;
             float startX = transform.position.x - (width * actualNodeSize / 2);
             // Setting this to a sum so the instantiation starts at the top left (personal preference).
-            float startZ = transform.position.z + (height * actualNodeSize / 2); 
+            float startZ = transform.position.z + (height * actualNodeSize / 2);
 
             GameObject nodesParent = new GameObject("Nodes");
             nodesParent.transform.parent = transform;
@@ -51,9 +53,9 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 );
 
                 Node newNode = CreateNode(nodePosition, nodesParent.transform);
-                
+
                 grid[i] = newNode;
-                
+
                 newNode.gameObject.name = $"Node_{x}_{z}";
             }
         }
@@ -66,5 +68,15 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             return node;
         }
-    }
+
+        public Node GetNodeIndex(Vector3 worldPosition)
+        {
+            //int x = i % width;
+            //int z = i / width;
+            Vector3Int gridPosition = new Vector3Int((int)worldPosition.x / (int)nodeSize, 0, (int)worldPosition.z / (int)nodeSize);
+            //(x + yc * z);
+            int i = gridPosition.x + gridPosition.z * width;
+            return grid[i];
+        }
+}
 }

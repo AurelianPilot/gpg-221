@@ -13,8 +13,15 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [Header("- Grid Settings")] [SerializeField]
         private Node nodePrefab;
 
+        public Node[] Nodes => grid;
+        public int Width => width;
+        public int Height => height;
+        public float NodeSize => nodeSize;
+        public float NodeSpacing => nodeSpacing;
+        
         [SerializeField] private int width = 10;
         [SerializeField] private int height = 10;
+        
         [SerializeField] private float nodeSize = 1f;
         [SerializeField] private float nodeSpacing = 0.1f;
 
@@ -53,11 +60,13 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 );
 
                 Node newNode = CreateNode(nodePosition, nodesParent.transform);
-
+                newNode.Index = i;
                 grid[i] = newNode;
 
                 newNode.gameObject.name = $"Node_{x}_{z}";
             }
+            
+            
         }
 
         private Node CreateNode(Vector3 nodePosition, Transform nodesParentTransform)
@@ -87,7 +96,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             // Check if the coordinates are within the grid bounds.
             if (x < 0 || x >= width || z < 0 || z >= height)
             {
-                Debug.LogWarning($"Position {worldPosition} is outside the grid bounds.");
+                Debug.LogWarning($"GridManager.cs in {gameObject.name}: Position {worldPosition} is outside the grid bounds.");
                 return null;
             }
 
@@ -96,7 +105,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             // Check if the index is valid:
             if (index < 0 || index >= grid.Length)
             {
-                Debug.LogWarning($"The calculated index '{index}' is out of bounds.");
+                Debug.LogWarning($"GridManager.cs in {gameObject.name}: The calculated index '{index}' is out of bounds.");
                 return null;
             }
 

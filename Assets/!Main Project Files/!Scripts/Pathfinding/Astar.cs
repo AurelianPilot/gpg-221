@@ -1,24 +1,203 @@
-using System;
 using System.Collections.Generic;
-using System.Net.NetworkInformation;
-using JetBrains.Annotations;
+using System.Linq;
+using System.Numerics;
+using _Main_Project_Files._Scripts.Pathfinding;
+using NUnit.Framework;
 using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
+using UnityEditorInternal;
 using UnityEngine;
+using Vector3 = UnityEngine.Vector3;
 
 public class Astar : MonoBehaviour
 {
-    private List<Node> openList = new List<Node>();
-    private List<Node> closeList = new List<Node>();
+    // These lists are to track the nodes during the pathfinding process.
+    private List<Node> openList = new();
+    private List<Node> closeList = new();
 
-    [SerializeField] private Vector3 startPosition;
+    [Header("- Path Settings")] [SerializeField]
+    private Vector3 startPosition;
+
     [SerializeField] private Vector3 goalPosition;
 
+    private GridManager _grid;
     private Node startNode;
     private Node goalNode;
+    private Node currentNode;
 
     private void Start()
     {
+        _grid = GetComponent<GridManager>();
+    }
 
+    // Calculate the Manhattan distance between two nodes.
+    private float CalculateDistance(Node nodeA, Node nodeB)
+    {
+        return Mathf.Abs(nodeA.Position.x - nodeB.Position.x) +
+               Mathf.Abs(nodeA.Position.z - nodeB.Position.z);
+    }
+
+    // Calculate the distance from a node to the goal.
+    private float CalculateHCost(Node node, Node goalNode)
+    {
+        return CalculateDistance(node, goalNode);
+    }
+
+    public void FindPath(Vector3 start, Vector3 goal)
+    {
+        // Get the indexes from the position of our nodes.
+        startNode = _grid.GetNodeIndex(start);
+        goalNode = _grid.GetNodeIndex(goal);
+
+        if (startNode == null || goalNode == null)
+        {
+            Debug.LogError($"Astar.cs in {gameObject.name}: Start or goal position is outside the grid.");
+            return;
+        }
+        
+        // Clear to start fresh every time this method runs.
+        openList.Clear();
+        closeList.Clear();
+
+        // Initializes the start node.
+        startNode.GCost = 0;
+        startNode.HCost = CalculateHCost(startNode, goalNode);
+
+        // Adds the start node to the open list to begin processing.
+        startNode.GCost = 0;
+        startNode.HCost = CalculateHCost(startNode, goalNode);
+        
+        openList.Add(startNode);
+        
+        // Debug visualizer.
+        startNode.UpdateVisuals(NodeState.Open);
+        goalNode.UpdateVisuals(NodeState.Closed);
+
+        // Pathfinding loop:
+        while (openList.Count > 0)
+        {
+            currentNode = FindLowestFCostNode(openList);
+
+            if (currentNode == goalNode)
+            {
+                RetracePath(startNode, goalNode);
+                return;
+            }
+
+            // Move current node from the open to the closed list.
+            openList.Remove(currentNode);
+            closeList.Add(currentNode);
+            
+            currentNode.UpdateVisuals(NodeState.Closed);
+
+            var neighbors = GetNeighbors(currentNode);
+
+            foreach (var neighbor in neighbors)
+            {
+                // Skip if the neighbor is not walkable or was already checked.
+                if (!neighbor.Walkable || closeList.Contains(neighbor))
+                {
+                    continue;
+                }
+
+                float tentativeGCost = currentNode.GCost + CalculateDistance(currentNode, neighbor);
+
+                if (tentativeGCost < neighbor.GCost || !openList.Contains(neighbor))
+                {
+                    neighbor.GCost = tentativeGCost;
+                    neighbor.HCost = CalculateHCost(neighbor, goalNode);
+                    neighbor.Parent = currentNode;
+
+                    if (!openList.Contains(neighbor))
+                    {
+                        openList.Add(neighbor);
+                        neighbor.UpdateVisuals(NodeState.Open);
+                    }
+                }
+            }
+        }
+        Debug.LogWarning($"Astar.cs in {gameObject.name}: No path found.");
+    }
+
+    
+    // Helping methods.
+    private void RetracePath(Node node, Node goalNode)
+    {
+        // List that stores the current path.
+        List<Node> path = new List<Node>();
+        Node currentNode = goalNode;
+        
+        // This time it starts from the goal and goes until it reaches the start.
+        while (currentNode != startNode)
+        {
+            path.Add(currentNode);
+            // This is the previous node (aka parent).
+            currentNode = currentNode.Parent;
+        }
+        
+        // This reverses the order:
+        path.Reverse();
+
+        foreach (Node _node in path)
+        {
+            node.UpdateVisuals(NodeState.Path);
+        }
+        
+        Debug.Log($"Path found, {path.Count} nodes in path.");
+    }
+
+    private Node FindLowestFCostNode(List<Node> nodeList)
+    {
+        // Default to prevent null.
+        Node lowestFCostNode = nodeList[0];
+
+        // Start at 1 for better understanding, and look through all nodes.
+        for (int i = 1; i < nodeList.Count; i++)
+        {
+            // If the node's F cost is lower than the lowest F cost, it becomes the best choice.
+            if (nodeList[i].FCost < lowestFCostNode.FCost)
+            {
+                lowestFCostNode = nodeList[i];
+            }
+            // If the F costs are the same then grab the one with the lower H cost (closer to the end).
+            else if (nodeList[i].FCost == lowestFCostNode.FCost && nodeList[i].HCost < lowestFCostNode.HCost)
+            {
+                lowestFCostNode = nodeList[i];
+            }
+        }
+        return lowestFCostNode;
+    }
+
+    private List<Node> GetNeighbors(Node node)
+    {
+        var neighbors = new List<Node>();
+
+        int x = node.Index & _grid.Width;
+        int z = node.Index / _grid.Width;
+        
+        // Right neighbor:
+        if (x < _grid.Width - 1)
+        {
+            neighbors.Add(_grid.Nodes[node.Index + 1]);
+        }
+        
+        // Left neighbor:
+        if (x > 0)
+        {
+            neighbors.Add(_grid.Nodes[node.Index - 1]);
+        }
+        
+        // Down neighbor:
+        if (z < _grid.Height - 1)
+        {
+            neighbors.Add(_grid.Nodes[node.Index + _grid.Width]);
+        }
+        
+        // Up neighbor:
+        if (z > 0)
+        {
+            neighbors.Add(_grid.Nodes[node.Index - _grid.Width]);
+        }
+        
+        return neighbors;
     }
 }

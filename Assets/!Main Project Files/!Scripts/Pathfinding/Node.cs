@@ -15,6 +15,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         public float HCost { get; set; } // The distance from the end/objective.
         public float FCost => GCost + HCost;
         public bool Walkable { get; set; }
+        public int Index { get; set; }
 
         [Header(" - Visual References")] 
         [SerializeField] private TextMeshProUGUI gCostText;

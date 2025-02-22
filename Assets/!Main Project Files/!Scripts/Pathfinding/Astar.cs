@@ -19,8 +19,6 @@ public class Astar : MonoBehaviour
 
     private void Start()
     {
-        grid = GetComponent<Grid>();
 
-        startNode = grid.GetNode(startPosition);
     }
 }

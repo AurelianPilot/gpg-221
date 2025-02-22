@@ -30,8 +30,13 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
         private void Awake()
         {
+            if (_meshRenderer == null)
+            {
+                _meshRenderer = GetComponent<MeshRenderer>();
+            }
             Position = transform.position;
         }
+        
 
         public void UpdateVisuals(NodeState state)
         {

@@ -148,7 +148,6 @@ GameObject:
   - component: {fileID: 2800961532626628100}
   - component: {fileID: 1550265060404165440}
   - component: {fileID: 507290121621127430}
-  - component: {fileID: 139330705897105167}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -241,26 +240,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &139330705897105167
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 705958230741963552}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a85ccb205c63574f9474ece8414005a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gCostText: {fileID: 0}
-  hCostText: {fileID: 0}
-  fCostText: {fileID: 0}
-  _meshRenderer: {fileID: 0}
-  defaultColor: {r: 0, g: 0, b: 0, a: 0}
-  openColor: {r: 0, g: 0, b: 0, a: 0}
-  closedColor: {r: 0, g: 0, b: 0, a: 0}
-  pathColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &1187489490238206994
 GameObject:
   m_ObjectHideFlags: 0

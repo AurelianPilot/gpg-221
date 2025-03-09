@@ -6,6 +6,9 @@ using UnityEngine.Serialization;
 
 namespace _Main_Project_Files._Scripts.Pathfinding
 {
+    /// <summary>
+    /// This is a single node in the pathfinding grid, stores data and handles debug visuals.
+    /// </summary>
     public class Node : MonoBehaviour, IComparable
     {
         [Header("- Node Properties")] [SerializeField]

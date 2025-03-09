@@ -5,12 +5,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using Vector3 = UnityEngine.Vector3;
 
+/// <summary>
+/// Implements the Astar pathfinding algorithm to find the shortest path between two points in the grid.
+/// </summary>
 public class Astar : MonoBehaviour
 {
     // These lists are to track the nodes during the pathfinding process.
     private readonly List<Node> openList = new();
     private readonly List<Node> closeList = new();
-    
+
     // In here I'm storing the current path for external access (for the agent).
     public List<Node> CurrentPath { get; private set; } = new List<Node>();
 
@@ -45,43 +48,7 @@ public class Astar : MonoBehaviour
         }
     }
 
-    private void RunPathfinding()
-    {
-        ResetVisualization();
-        FindPath(startPosition, goalPosition);
-    }
-
-    private void ResetVisualization()
-    {
-        var allNodes = FindObjectsOfType<Node>();
-
-        // Resets the nodes.
-        foreach (var node in allNodes)
-        {
-            // Don't set the costs to 0 because it messes the script when running the pathfinding again.
-            node.GCost = float.MaxValue;
-            node.HCost = float.MaxValue;
-            node.Parent = null;
-            node.UpdateVisuals(NodeState.Default);
-        }
-
-        openList.Clear();
-        closeList.Clear();
-        CurrentPath.Clear();
-    }
-
-    // Calculate the Manhattan distance between two nodes.
-    private float CalculateDistance(Node nodeA, Node nodeB)
-    {
-        return Mathf.Abs(nodeA.Position.x - nodeB.Position.x) +
-               Mathf.Abs(nodeA.Position.z - nodeB.Position.z);
-    }
-
-    // Calculate the distance from a node to the goal.
-    private float CalculateHCost(Node node, Node goalNode)
-    {
-        return CalculateDistance(node, goalNode);
-    }
+    #region Public Methods
 
     public void FindPath(Vector3 start, Vector3 goal)
     {
@@ -158,29 +125,67 @@ public class Astar : MonoBehaviour
         Debug.LogWarning($"Astar.cs in {gameObject.name}: No path found.");
     }
 
+    #endregion
+
+    #region Private Methods
+
+    private void RunPathfinding()
+    {
+        ResetVisualization();
+        FindPath(startPosition, goalPosition);
+    }
+
+    private void ResetVisualization()
+    {
+        var allNodes = FindObjectsOfType<Node>();
+
+        // Resets the nodes.
+        foreach (var node in allNodes)
+        {
+            // Don't set the costs to 0 because it messes the script when running the pathfinding again.
+            node.GCost = float.MaxValue;
+            node.HCost = float.MaxValue;
+            node.Parent = null;
+            node.UpdateVisuals(NodeState.Default);
+        }
+
+        openList.Clear();
+        closeList.Clear();
+        CurrentPath.Clear();
+    }
+
+    // Calculate the Manhattan distance between two nodes.
+    private float CalculateDistance(Node nodeA, Node nodeB)
+    {
+        return Mathf.Abs(nodeA.Position.x - nodeB.Position.x) +
+               Mathf.Abs(nodeA.Position.z - nodeB.Position.z);
+    }
+
+    // Calculate the distance from a node to the goal.
+    private float CalculateHCost(Node node, Node goalNode)
+    {
+        return CalculateDistance(node, goalNode);
+    }
 
     // Helping methods.
     private void RetracePath(Node node, Node goalNode)
     {
-        CurrentPath = new List<Node>();
-        
-        // List that stores the current path.
         var path = new List<Node>();
         var currentNode = goalNode;
 
-        // This time it starts from the goal and goes until it reaches the start.
         while (currentNode != startNode)
         {
-            CurrentPath.Add(currentNode);
             path.Add(currentNode);
-            // This is the previous node (aka parent).
             currentNode = currentNode.Parent;
         }
 
         // This reverses the order:
         path.Reverse();
 
-        foreach (var _node in path) node.UpdateVisuals(NodeState.Path);
+        // Set CurrentPath to the reversed path
+        CurrentPath = new List<Node>(path);
+
+        foreach (var _node in path) _node.UpdateVisuals(NodeState.Path);
 
         Debug.Log($"Path found, {path.Count} nodes in path.");
     }
@@ -222,4 +227,6 @@ public class Astar : MonoBehaviour
 
         return neighbors;
     }
+
+    #endregion
 }

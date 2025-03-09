@@ -7,6 +7,9 @@ using UnityEngine;
 
 namespace _Main_Project_Files._Scripts.Pathfinding
 {
+    /// <summary>
+    /// Manages the grid of nodes used for pathfinding. Creates the grid with nodes inside.
+    /// </summary>
     public class GridManager : MonoBehaviour
     {
         [Header("- Grid Settings")] [SerializeField]
@@ -79,18 +82,21 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
         public Node GetNodeIndex(Vector3 worldPosition)
         {
+            // Add debug logs to help identify issues
+            Debug.Log($"Getting node at position: {worldPosition}");
+            Debug.Log($"Grid origin: {transform.position}, Width: {width}, Height: {height}");
+    
             float actualNodeSize = nodeSize + nodeSpacing;
 
             // This is to sync the actual world position and make it relative to the grid's origin.
-
-            // For the X, subtract the grid's position from the world's position to get the relative position.
             float relativeX = worldPosition.x - transform.position.x + (width * actualNodeSize / 2);
-            // For the Z, start from the grid's Z position, add half the grid's height to reach the top edge and subtract the world Z position. 
             float relativeZ = transform.position.z + (height * actualNodeSize / 2) - worldPosition.z;
 
             // This is to convert to grid coordinates:
             int x = Mathf.RoundToInt(relativeX / actualNodeSize);
             int z = Mathf.RoundToInt(relativeZ / actualNodeSize);
+
+            Debug.Log($"Calculated grid coordinates: x={x}, z={z}");
 
             // Check if the coordinates are within the grid bounds.
             if (x < 0 || x >= width || z < 0 || z >= height)
@@ -101,6 +107,13 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             int index = x + (z * width);
 
+            // Check if the grid array exists
+            if (grid == null)
+            {
+                Debug.LogError("Grid array is null. Make sure CreateGrid has been called.");
+                return null;
+            }
+
             // Check if the index is valid:
             if (index < 0 || index >= grid.Length)
             {
@@ -110,5 +123,5 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             return grid[index];
         }
-}
+    }
 }

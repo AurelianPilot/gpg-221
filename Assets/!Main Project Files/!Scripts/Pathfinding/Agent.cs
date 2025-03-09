@@ -6,6 +6,9 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 {
     public class Agent : MonoBehaviour
     {
+        /// <summary>
+        /// Controls the movement of an agent in a path calculated by the Astar algorithm.
+        /// </summary>
         [Header("- Agent Settings")]
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float rotationSpeed = 100f;
@@ -33,6 +36,9 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             }
         }
 
+        #region Public Methods
+
+        
         public void FollowPath(Vector3 targetPosition)
         {
             Vector3 startPosition = transform.position;
@@ -41,7 +47,10 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             StartCoroutine(WaitForPathAndFollow());
         }
+        
+        #endregion
 
+        #region Private Methods
         private IEnumerator WaitForPathAndFollow()
         {
             yield return null;
@@ -67,15 +76,17 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             isFollowingPath = true;
             currentWaypointIndex = 0;
 
+            float fixedHeight = transform.position.y;
+            
             while (isFollowingPath && currentPath != null && currentWaypointIndex < currentPath.Count)
             {
                 // Get current target.
                 Node targetNode = currentPath[currentWaypointIndex];
-                Vector3 targetPosition = targetNode.transform.position;
-            
-                // Keep the agent Y position relative to the node (a little bit upwards),
-                targetPosition.y = transform.position.y + 1;
-            
+                Vector3 targetPosition = targetNode.Position;
+                
+                // Y Offset.
+                targetPosition.y = fixedHeight;
+                
                 // Get direction to target.
                 Vector3 directionToTarget = (targetPosition - transform.position).normalized;
             
@@ -144,7 +155,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 currentTarget.y += .2f;
                 Gizmos.DrawSphere(currentTarget, 0.2f);
             }
-        
         }
+        
+        #endregion
     }
 }

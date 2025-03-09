@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using _Main_Project_Files._Scripts.Pathfinding;
 using UnityEngine;
@@ -9,6 +10,9 @@ public class Astar : MonoBehaviour
     // These lists are to track the nodes during the pathfinding process.
     private readonly List<Node> openList = new();
     private readonly List<Node> closeList = new();
+    
+    // In here I'm storing the current path for external access (for the agent).
+    public List<Node> CurrentPath { get; private set; } = new List<Node>();
 
     [Header("- Path Settings")] [SerializeField]
     private Vector3 startPosition;
@@ -33,6 +37,14 @@ public class Astar : MonoBehaviour
         if (pathfindingButton != null) pathfindingButton.onClick.AddListener(RunPathfinding);
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(runPathfindingKeyCode))
+        {
+            RunPathfinding();
+        }
+    }
+
     private void RunPathfinding()
     {
         ResetVisualization();
@@ -55,6 +67,7 @@ public class Astar : MonoBehaviour
 
         openList.Clear();
         closeList.Clear();
+        CurrentPath.Clear();
     }
 
     // Calculate the Manhattan distance between two nodes.
@@ -85,6 +98,7 @@ public class Astar : MonoBehaviour
         // Clear to start fresh every time this method runs.
         openList.Clear();
         closeList.Clear();
+        CurrentPath.Clear();
 
         // Initializes the start node.
         startNode.GCost = 0;
@@ -148,6 +162,8 @@ public class Astar : MonoBehaviour
     // Helping methods.
     private void RetracePath(Node node, Node goalNode)
     {
+        CurrentPath = new List<Node>();
+        
         // List that stores the current path.
         var path = new List<Node>();
         var currentNode = goalNode;
@@ -155,6 +171,7 @@ public class Astar : MonoBehaviour
         // This time it starts from the goal and goes until it reaches the start.
         while (currentNode != startNode)
         {
+            CurrentPath.Add(currentNode);
             path.Add(currentNode);
             // This is the previous node (aka parent).
             currentNode = currentNode.Parent;

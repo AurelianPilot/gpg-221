@@ -49,7 +49,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             float actualNodeSize = nodeSize + nodeSpacing;
             float startX = transform.position.x - (width * actualNodeSize / 2);
-            // Setting this to a sum so the instantiation starts at the top left (personal preference).
             float startZ = transform.position.z + (height * actualNodeSize / 2);
 
             GameObject nodesParent = new GameObject("Nodes");

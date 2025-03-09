@@ -205,7 +205,7 @@ public class Astar : MonoBehaviour
     {
         var neighbors = new List<Node>();
 
-        var x = node.Index & _grid.Width;
+        var x = node.Index % _grid.Width;
         var z = node.Index / _grid.Width;
 
         // Right neighbor:

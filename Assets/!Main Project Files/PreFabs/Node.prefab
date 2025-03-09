@@ -362,6 +362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a85ccb205c63574f9474ece8414005a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isWalkable: 1
   gCostText: {fileID: 3790022178222343663}
   hCostText: {fileID: 6878858532680395692}
   fCostText: {fileID: 5288316749625630233}
@@ -370,6 +371,7 @@ MonoBehaviour:
   openColor: {r: 0.2825639, g: 0.57232696, b: 0.33457267, a: 1}
   closedColor: {r: 0.51572317, g: 0.2092084, b: 0.2092084, a: 1}
   pathColor: {r: 0.8553459, g: 0.8553459, b: 0.8553459, a: 1}
+  unwalkableColor: {r: 0.29887298, g: 0, b: 0.4198113, a: 1}
 --- !u!1 &3394622968925482065
 GameObject:
   m_ObjectHideFlags: 0

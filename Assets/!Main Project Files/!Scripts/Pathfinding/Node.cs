@@ -38,6 +38,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 _meshRenderer = GetComponent<MeshRenderer>();
             }
             Position = transform.position;
+            Walkable = isWalkable;
         }
 
         public void SetWalkable(bool walkable)

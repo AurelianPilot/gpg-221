@@ -27,6 +27,12 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [SerializeField] private float nodeSize = 1f;
         [SerializeField] private float nodeSpacing = 0.1f;
 
+        [Header("- Obstacle Detection")]
+        [SerializeField] private LayerMask obstacleMask;
+        [SerializeField] private float raycastHeight = 10f;
+        [SerializeField] private float raycastRadius = 0.45f;
+        [SerializeField] private bool detectObstacles = true;
+        
         [Header("- Grid Debug")] [SerializeField]
         private bool isDebug = true;
 
@@ -66,9 +72,27 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 grid[i] = newNode;
 
                 newNode.gameObject.name = $"Node_{x}_{z}";
+                
+                // Look for obstacles if asked to.
+                CheckForObstacle(newNode);
             }
-            
-            
+        }
+
+        private void CheckForObstacle(Node node)
+        {
+            Vector3 raycastStar = node.Position + Vector3.up * raycastHeight;
+            bool hasObstacle = Physics.CheckSphere(node.Position, raycastRadius * nodeSize, obstacleMask);
+
+            if (hasObstacle)
+            {
+                node.Walkable = false;
+                node.SetWalkable(false);
+
+                if (isDebug)
+                {
+                    Debug.Log($"Obstacle detected at {node.Position}.");
+                }
+            }
         }
 
         private Node CreateNode(Vector3 nodePosition, Transform nodesParentTransform)
@@ -82,10 +106,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
         public Node GetNodeIndex(Vector3 worldPosition)
         {
-            // Add debug logs to help identify issues
-            Debug.Log($"Getting node at position: {worldPosition}");
-            Debug.Log($"Grid origin: {transform.position}, Width: {width}, Height: {height}");
-    
+   
             float actualNodeSize = nodeSize + nodeSpacing;
 
             // This is to sync the actual world position and make it relative to the grid's origin.

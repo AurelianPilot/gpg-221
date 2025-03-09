@@ -121,6 +121,28 @@ public class Agent : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        )
+        if (!isFollowingPath || currentPath == null || currentPath.Count == 0) return;
+        
+        Gizmos.color = Color.red;
+
+        for (int i = currentWaypointIndex; i < currentPath.Count - 1; i++)
+        {
+            Vector3 startPosition = currentPath[i].Position;
+            Vector3 endPosition = currentPath[i + 1].Position;
+            
+            // Y above ground for visibility.
+            startPosition.y += .2f;
+            endPosition.y += .2f; 
+            
+            Gizmos.DrawLine(startPosition, endPosition);
+        }
+
+        if (currentWaypointIndex < currentPath.Count)
+        {
+            Vector3 currentTarget = currentPath[currentWaypointIndex].Position;
+            currentTarget.y += .2f;
+            Gizmos.DrawSphere(currentTarget, 0.2f);
+        }
+        
     }
 }

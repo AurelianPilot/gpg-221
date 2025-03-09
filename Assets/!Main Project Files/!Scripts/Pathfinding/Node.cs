@@ -8,7 +8,9 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 {
     public class Node : MonoBehaviour, IComparable
     {
-        [Header("- Node Properties")]
+        [Header("- Node Properties")] [SerializeField]
+        private bool isWalkable = true;
+        
         public Vector3 Position { get; set; }
         public Node Parent { get; set; }
         public float GCost { get; set; } // The distance from the current position to the start (the distance already walked in).
@@ -27,6 +29,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [SerializeField] private Color openColor;
         [SerializeField] private Color closedColor;
         [SerializeField] private Color pathColor;
+        [SerializeField] private Color unwalkableColor;
 
         private void Awake()
         {
@@ -36,16 +39,30 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             }
             Position = transform.position;
         }
-        
 
+        public void SetWalkable(bool walkable)
+        {
+            isWalkable = walkable;
+            UpdateVisuals(isWalkable ? NodeState.Default : NodeState.Unwalkable);
+        }
+        
         public void UpdateVisuals(NodeState state)
         {
+            if (_meshRenderer == null) return;
+
+            if (!isWalkable)
+            {
+                _meshRenderer.material.color = unwalkableColor;
+                return;
+            }
+            
             Color newColor = state switch
             {
                 NodeState.Default => defaultColor,
                 NodeState.Open => openColor,
                 NodeState.Closed => closedColor,
                 NodeState.Path => pathColor,
+                NodeState.Unwalkable => unwalkableColor,
                 _ => defaultColor
             };
 
@@ -58,7 +75,24 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
         public int CompareTo(object obj)
         {
-            throw new NotImplementedException();
+            if (obj == null) return 1;
+
+            if (obj is Node otherNode)
+            {
+                int comparison = FCost.CompareTo(otherNode.FCost);
+
+                if (comparison == 0)
+                {
+                    comparison = HCost.CompareTo(otherNode.HCost);
+                }
+                
+                return comparison;
+            }
+            else
+            {
+                // Argument exception and not debug log error because it lets me not return anything.
+                throw new ArgumentException("Object is not a Node");
+            }
         }
     }
 }

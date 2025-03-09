@@ -5,5 +5,6 @@ public enum NodeState
     Default,
     Open,
     Closed,
-    Path
+    Path,
+    Unwalkable
 }

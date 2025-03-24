@@ -2,8 +2,9 @@ using UnityEngine;
 
 namespace _Main_Project_Files._Scripts.GOAP
 {
-    public abstract class PreRequisites
+    public class PreRequisites
     {
-        private bool isMet;
+        public bool isAchivable;
+        private string preRequisiteName = "";
     }
 }

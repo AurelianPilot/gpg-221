@@ -1,10 +1,7 @@
 ﻿namespace _Main_Project_Files._Scripts.GOAP
 {
-    public interface IActionable
+    interface IActionable
     {
-        private void PerformAction()
-        {
-            
-        }
+        void PerformAction();
     }
 }

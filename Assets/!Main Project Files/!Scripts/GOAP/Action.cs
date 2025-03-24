@@ -6,18 +6,23 @@ namespace _Main_Project_Files._Scripts.GOAP
     /// <summary>
     /// An action that is performed by AI.
     /// </summary>
-    public class Action : MonoBehaviour, IActionable
+    public class Action : MonoBehaviour
     {
+        [SerializeField] protected string actionName = "Unnamed Action";
+        [SerializeField] protected float actionCost = 1f;
+        [SerializeField] protected bool isActionAchivable = false;
+        
         /// <summary>
         /// Effect caused by this action being performed.
         /// </summary>
-        List<Effect> effects = new List<Effect>();
+        [SerializeField] protected List<Effect> effects = new List<Effect>();
         
         /// <summary>
         /// Pre-requisites for this action to be performed.
         /// </summary>
-        List<PreRequisite> preRequisites = new List<PreRequisite>();
+        [SerializeField] protected List<PreRequisite> preRequisites = new List<PreRequisite>();
 
+        #region Script Specific
         /// <summary>
         /// Get cost of than action.
         /// </summary>
@@ -36,5 +41,7 @@ namespace _Main_Project_Files._Scripts.GOAP
         {
             throw new System.NotImplementedException();
         }
+        #endregion
+
     }
 }

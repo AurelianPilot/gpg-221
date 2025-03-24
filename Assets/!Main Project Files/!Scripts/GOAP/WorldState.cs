@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace _Main_Project_Files._Scripts.Pathfinding
+namespace _Main_Project_Files._Scripts.GOAP
 {
     public class WorldState : MonoBehaviour
     {

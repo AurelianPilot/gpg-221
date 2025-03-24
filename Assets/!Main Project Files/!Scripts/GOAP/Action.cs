@@ -16,7 +16,7 @@ namespace _Main_Project_Files._Scripts.GOAP
         /// <summary>
         /// Pre-requisites for this action to be performed.
         /// </summary>
-        List<PreRequisites> preRequisites = new List<PreRequisites>();
+        List<PreRequisite> preRequisites = new List<PreRequisite>();
 
         /// <summary>
         /// Get cost of than action.

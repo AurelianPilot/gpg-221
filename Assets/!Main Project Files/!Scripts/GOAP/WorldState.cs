@@ -28,5 +28,14 @@ namespace _Main_Project_Files._Scripts.GOAP
 
             return false;
         }
+        
+        /// <summary>
+        /// Returns a copy of the states dictionary.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, bool> GetStates()
+        {
+            return new Dictionary<string, bool>(states);
+        }
     }
 }

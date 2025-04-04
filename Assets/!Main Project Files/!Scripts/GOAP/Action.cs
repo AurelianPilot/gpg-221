@@ -22,7 +22,7 @@ namespace _Main_Project_Files._Scripts.GOAP
         /// Pre-requisites for this action to be performed.
         /// </summary>
         [SerializeField] protected List<PreRequisite> preRequisites = new List<PreRequisite>();
-
+        
         
         public string ActionName => actionName;
         public float ActionCost => actionCost;

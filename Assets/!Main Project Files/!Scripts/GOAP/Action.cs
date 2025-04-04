@@ -23,7 +23,7 @@ namespace _Main_Project_Files._Scripts.GOAP
         /// </summary>
         [SerializeField] protected List<PreRequisite> preRequisites = new List<PreRequisite>();
 
-        // Getters.
+        
         public string ActionName => actionName;
         public float ActionCost => actionCost;
         public bool IsActionAchivable => isActionAchivable;

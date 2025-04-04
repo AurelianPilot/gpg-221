@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace _Main_Project_Files._Scripts.GOAP
 {
-    [Serializable]
     public class PreRequisite
     {
         private bool isAchivable;

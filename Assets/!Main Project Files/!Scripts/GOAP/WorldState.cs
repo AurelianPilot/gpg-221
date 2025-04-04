@@ -6,7 +6,7 @@ namespace _Main_Project_Files._Scripts.GOAP
     public class WorldState : MonoBehaviour
     {
         private readonly Dictionary<string, bool> states = new Dictionary<string, bool>();
-
+        
         public void SetState(string key, bool value)
         {
             if (states.ContainsKey(key))

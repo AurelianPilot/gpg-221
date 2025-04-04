@@ -31,7 +31,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [SerializeField] private LayerMask obstacleMask;
         [SerializeField] private float raycastHeight = 10f;
         [SerializeField] private float raycastRadius = 0.45f;
-        [SerializeField] private bool detectObstacles = true;
         
         [Header("- Grid Debug")] [SerializeField]
         private bool isDebug = true;

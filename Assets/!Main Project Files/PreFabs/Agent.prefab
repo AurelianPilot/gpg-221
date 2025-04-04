@@ -60,9 +60,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -120,6 +117,11 @@ GameObject:
   - component: {fileID: 2346009192527248147}
   - component: {fileID: 2128834781559836630}
   - component: {fileID: 4112377384758413027}
+  - component: {fileID: 5134429534520942827}
+  - component: {fileID: -5988508313680159202}
+  - component: {fileID: -4860785210063858446}
+  - component: {fileID: -7456346363598945605}
+  - component: {fileID: 5153497157487383075}
   m_Layer: 0
   m_Name: Agent
   m_TagString: Untagged
@@ -186,6 +188,88 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &5134429534520942827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3971989451797335000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 215cbc1caa242ce43a7d156e5f712a7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-5988508313680159202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3971989451797335000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f15037f5c12bd28418bc38d1129c1cb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  agentName: GOAP Agent
+  planningInterval: 1
+  activeGoalState: 
+  activeGoalValue: 1
+  debugMode: 1
+--- !u!114 &-4860785210063858446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3971989451797335000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9a0524a30ffdd14eafe18952ece513c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actionName: Unnamed Action
+  actionCost: 1
+  isActionAchivable: 0
+  targetLocation: {fileID: 0}
+  arrivaDistance: 0.5
+  atLocationStateName: AtLocation
+--- !u!114 &-7456346363598945605
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3971989451797335000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 645bdb69e42a3cf4789de071be89407d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  actionName: Unnamed Action
+  actionCost: 1
+  isActionAchivable: 0
+  patrolPoints: []
+  patrolPointStopTime: 1
+  arrivalDistance: 0.5
+  isPatrollingStateName: IsPatrolling
+  areaPatrolledStateName: AreaPatrolled
+--- !u!114 &5153497157487383075
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3971989451797335000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 291d1c4a52a415841ab2cbad97b2b974, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  goapAgent: {fileID: 0}
+  targetLocation: {fileID: 0}
+  patrolPoints: []
 --- !u!1 &4866780445130388348
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,9 +329,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

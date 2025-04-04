@@ -1,5 +1,8 @@
 using System;
 using System.Xml.Serialization;
+using _Main_Project_Files._Scripts.GOAP;
+using _Main_Project_Files._Scripts.GOAP.Actions;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace _Main_Project_Files._Scripts.Pathfinding

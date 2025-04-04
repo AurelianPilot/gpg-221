@@ -86,7 +86,10 @@ namespace _Main_Project_Files._Scripts.GOAP
                     Debug.Log($"GoapAgent.cs: Goal {activeGoalState} = {activeGoalValue} is already achieved.");
                 }
             }
-            return false;
+
+            Planner planner = new Planner();
+            List<Action> plan = planner.CreatePlan(worldState, availableActions, activeGoalState, activeGoalValue);
+            
         }
         
         

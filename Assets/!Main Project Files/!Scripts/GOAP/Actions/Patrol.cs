@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using _Main_Project_Files._Scripts.Pathfinding;
+using UnityEditor.AssetImporters;
 using UnityEngine;
+using Color = System.Drawing.Color;
 
 namespace _Main_Project_Files._Scripts.GOAP.Actions
 {
@@ -79,11 +81,25 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
                         if (showDebugPoints)
                         {
-                            
+                            GameObject visualMarker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                            visualMarker.transform.position = randomNode.Position;
+                            visualMarker.transform.localScale = Vector3.one * 0.3f;
+                            visualMarker.transform.parent = patrolPointObject.transform;
                         }
                     }
                 }
+                
+                Debug.Log($"[ACTION] Patrol.cs: Generated {patrolPoints.Count} randomly on grid.");
+
+                if (logging)
+                {
+                    for (int i = 0; i < patrolPoints.Count; i++)
+                    {
+                        Debug.Log($"[ACTION] Patrol.cs: patrol point {i + 1} position {patrolPoints[i].position}");
+                    }
+                }
             }
+            
             else
             {
                 Debug.LogWarning("[ACTION] Patrol.cs: No waypoints found in scene.");
@@ -126,10 +142,13 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         protected override IEnumerator PerformAction()
         {
             Debug.Log($"[ACTION] Patrol.cs: {gameObject.name} is patrolling.");
-
+            isPatrolling = true;
+            currentWaypointIndex = 0;
+            
             if (patrolPoints.Count == 0)
             {
                 Debug.LogError("[ACTION] Patrol.cs: No patrol points set.");
+                isPatrolling = false;
                 yield break;
             }
 
@@ -142,12 +161,42 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     if (pathfindingAgent == null)
                     {
                         Debug.LogError("[ACTION] Patrol.cs: No pathfinding agent found.");
+                        isPatrolling = false;
                         yield break;
                     }
                 }
             }
 
             // Visit each waypoint.
+            int waypointVisitCount = 0;
+            int maxIterations = 100;
+
+            if (logging)
+            {
+                Debug.Log($"[ACTION] Patrol.cs: {gameObject.name} is patrolling with {patrolPoints.Count} waypoints.");
+                for (int i = 0; i < patrolPoints.Count; i++)
+                {
+                    if (patrolPoints[i] != null)
+                    {
+                        Debug.Log($"[ACTION] Patrol.cs: Point {i}: {patrolPoints[i].position}");
+                    }
+                    else
+                    {
+                        Debug.LogError($"[ACTION] Patrol.cs: Point {i}is null");
+                    }
+                }
+            }
+
+            while (waypointVisitCount < maxIterations && isPatrolling)
+            {
+                if (patrolPoints.Count == 0)
+                {
+                    Debug.LogError("[ACTION] Patrol.cs: list became empty during patrol?");
+                    isPatrolling = false;
+                    yield break;
+                }
+            }
+            
             for (int i = 0; i < patrolPoints.Count; i++)
             {
                 Transform patrolPoint = patrolPoints[i];

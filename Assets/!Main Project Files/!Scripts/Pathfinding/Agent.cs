@@ -47,14 +47,17 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         {
             if (isPathFindingInProgress)
             {
-                Debug.Log($"Agent.cs: Pathfinding already in progress to {targetPosition}, ignoring new request.");
+                Debug.Log($"Agent.cs: Pathfinding already in progress to {targetPosition}, ignoring new request to {newTargetPosition}");
+                return;
             }
+            
             targetPosition = newTargetPosition;
             StopPathFollowing();
             
             Vector3 startPosition = transform.position;
+            Debug.Log($"Agent.cs: Finding path from {startPosition} to {targetPosition}");
             
-            astar.FindPath(startPosition, newTargetPosition);   
+            astar.FindPath(startPosition, targetPosition);
 
             StartCoroutine(WaitForPathAndFollow());
         }
@@ -94,6 +97,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             if (currentPath != null && currentPath.Count > 0)
             {
                 followPathCoroutine = StartCoroutine(FollowPathCoroutine());
+                Debug.Log($"Agent.cs: Path found with {currentPath.Count} nodes. Following path to {targetPosition}");
 
                 if (logging)
                 {
@@ -115,6 +119,11 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             currentWaypointIndex = 0;
             
             float fixedHeight = transform.position.y;
+            
+            if (logging)
+            {
+                Debug.Log($"Agent.cs: Started following path with {currentPath.Count} nodes");
+            }
 
             while (isFollowingPath && currentPath != null && currentWaypointIndex < currentPath.Count)
             {
@@ -123,22 +132,37 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 
                 nodePosition.y = fixedHeight;
                 
+                // Debug log current status every .5 seconds.(debug)
+                if (logging && Time.frameCount % 30 == 0) 
+                {
+                    float distanceToNode = Vector3.Distance(transform.position, nodePosition);
+                    Debug.Log($"Agent.cs: Moving to node {currentWaypointIndex}/{currentPath.Count-1}, distance: {distanceToNode:F2}");
+                }
+                
                 Vector3 directionToTarget = (nodePosition - transform.position).normalized;
                 
-                float distanceToTarget = Vector3.Distance(targetNode.Position, nodePosition);
+                float distanceToTarget = Vector3.Distance(transform.position, nodePosition);
 
                 if (distanceToTarget < waypointReachedDistance)
                 {
+                    if (logging)
+                    {
+                        Debug.Log($"Agent.cs: Reached node {currentWaypointIndex} at position {nodePosition}");
+                    }
+                    
                     currentWaypointIndex++;
-
+                
+                    // If the end was reached:
                     if (currentWaypointIndex >= currentPath.Count)
                     {
                         isFollowingPath = false;
-                        Debug.Log($"Agent.cs: Path completed. Reached final destination near {targetPosition}.");
+                        Debug.Log($"Agent.cs: Path completed. Reached final destination near {targetPosition}");
                         break;
                     }
+                    continue;
                 }
 
+                // Rotate agent towards target.
                 if (directionToTarget != Vector3.zero)
                 {
                     Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
@@ -151,15 +175,18 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             isFollowingPath = false;
 
+            // Calculate final distance to target to check if it actually arrived.
             float finalDistance = Vector3.Distance(transform.position, targetPosition);
-
+            Debug.Log($"Agent.cs: Path following complete. Final distance to target: {finalDistance:F2}");
+            
+            // Check if the agent is in a certain threshold distance from the target.
             if (finalDistance <= waypointReachedDistance * 2)
             {
-                Debug.Log($"Agent.cs: Path completed. Reached {targetPosition}.");
+                Debug.Log("Agent.cs: Successfully reached target!");
             }
             else
             {
-                Debug.LogWarning($"Agent.cs Path completed but agent is {finalDistance:F2} from the actual target.");
+                Debug.LogWarning($"Agent.cs: Path completed but agent is still {finalDistance:F2} units away from the target.");
             }
         }
 

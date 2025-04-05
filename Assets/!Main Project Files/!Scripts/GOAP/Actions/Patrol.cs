@@ -70,7 +70,6 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
             if (gridManager != null)
             {
-                if (gridManager == null) return;
                 Debug.Log("[ACTION] Patrol.cs: Generating patrol points randomly on grid.");
 
                 for (int i = 0; i < numberOfGeneratedPoints; i++)
@@ -89,6 +88,13 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                             visualMarker.transform.position = randomNode.Position;
                             visualMarker.transform.localScale = Vector3.one * 0.3f;
                             visualMarker.transform.parent = patrolPointObject.transform;
+
+                            // Add a distinctive color to better visualize
+                            Renderer renderer = visualMarker.GetComponent<Renderer>();
+                            if (renderer != null)
+                            {
+                                renderer.material.color = UnityEngine.Color.green;
+                            }
                         }
                     }
                 }
@@ -103,7 +109,6 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     }
                 }
             }
-
             else
             {
                 Debug.LogWarning("[ACTION] Patrol.cs: No waypoints found in scene.");
@@ -131,9 +136,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
         private bool IsTooCloseToOtherPoints(Vector3 position)
         {
-            float
-                minDistance =
-                    gridManager.NodeSize * 3; // putting some distances between points TODO: fix magic numbers later.
+            float minDistance = gridManager.NodeSize * 3; // putting some distances between points TODO: explain magic numbers lol.
             foreach (var point in patrolPoints)
             {
                 if (Vector3.Distance(position, point.position) < minDistance)
@@ -188,7 +191,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     }
                     else
                     {
-                        Debug.LogError($"[ACTION] Patrol.cs: Point {i}is null");
+                        Debug.LogError($"[ACTION] Patrol.cs: Point {i} is null");
                     }
                 }
             }
@@ -197,7 +200,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             {
                 if (patrolPoints.Count == 0)
                 {
-                    Debug.LogError("[ACTION] Patrol.cs: list became empty during patrol?");
+                    Debug.LogError("[ACTION] Patrol.cs: List became empty during patrol?");
                     isPatrolling = false;
                     yield break;
                 }
@@ -213,22 +216,32 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 if (patrolPoint == null)
                 {
                     Debug.LogWarning(
-                        $"[ACTION] Patrol.cs: atrol point at index {currentWaypointIndex} not found, skipping.");
+                        $"[ACTION] Patrol.cs: Patrol point at index {currentWaypointIndex} not found, skipping.");
                     currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
+                    
+                    // Important: skip to next iteration if this point is null (bug fix).
+                    continue;
                 }
 
-                Debug.Log($"[ACTION] Patrol.cs: Moving to waypoint {currentWaypointIndex + 1} of {patrolPoints.Count}");
+                Debug.Log(
+                    $"[ACTION] Patrol.cs: Moving to waypoint {currentWaypointIndex + 1} of {patrolPoints.Count} at {patrolPoint.position}");
 
+                // Check if its already at this checkpoint.
                 float initialDistance = Vector3.Distance(transform.position, patrolPoint.position);
                 if (initialDistance <= arrivalDistance)
                 {
-                    Debug.Log($"[ACTION] Patrol.cs: Reached waypoint {currentWaypointIndex + 1}");
+                    Debug.Log(
+                        $"[ACTION] Patrol.cs: Already at waypoint {currentWaypointIndex + 1}, moving to next one");
                     currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
                     waypointVisitCount++;
+                    // Move to next point
+                    continue;
                 }
 
+                // Move to the waypoint.
                 pathfindingAgent.FollowPath(patrolPoint.position);
 
+                // Wait til reaching waypoint or then show a timeout error.
                 float startWaitTime = Time.time;
                 float timeOut = 10f;
                 bool reachedWaypoint = false;
@@ -236,6 +249,13 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 while (!reachedWaypoint && Time.time < startWaitTime + timeOut && isPatrolling)
                 {
                     float distance = Vector3.Distance(transform.position, patrolPoint.position);
+
+                    // Log distance around every second.
+                    if (logging && Time.frameCount % 60 == 0) 
+                    {
+                        Debug.Log(
+                            $"[ACTION] Patrol.cs: Distance to waypoint {currentWaypointIndex + 1}: {distance:F2} (arrival threshold: {arrivalDistance})");
+                    }
 
                     if (distance <= arrivalDistance)
                     {
@@ -270,6 +290,8 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 }
             }
 
+            Debug.Log(
+                $"[ACTION] Patrol.cs: {gameObject.name} has finished patrolling after {waypointVisitCount} waypoints.");
             isPatrolling = false;
         }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -6,6 +7,7 @@ using _Main_Project_Files._Scripts.Pathfinding;
 using UnityEditor.AssetImporters;
 using UnityEngine;
 using Color = System.Drawing.Color;
+using Random = UnityEngine.Random;
 
 namespace _Main_Project_Files._Scripts.GOAP.Actions
 {
@@ -258,30 +260,8 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             {
                 Debug.Log($"[ACTION] Patrol.cs: Completed circuit!! Starting again.");
             }
-            
-            /*
-            for (int i = 0; i < patrolPoints.Count; i++)
-            {
-                Transform patrolPoint = patrolPoints[i];
-                Debug.Log($"[ACTION] Patrol.cs: Moving to waypoint {i + 1} of {patrolPoints.Count}.");
-                pathfindingAgent.FollowPath(patrolPoint.position);
 
-                bool reachedWaypoint = false;
-                while (!reachedWaypoint)
-                {
-                    float distance = Vector3.Distance(transform.position, patrolPoint.position);
-                    if (distance <= arrivalDistance)
-                    {
-                        reachedWaypoint = true;
-                    }
-
-                    yield return null;
-                }
-
-                yield return new WaitForSeconds(patrolPointStopTime);
-            }
-
-            Debug.Log($"[ACTION] Patrol.cs: {gameObject.name} has finished patrolling.");*/
+            isPatrolling = false;
         }
 
         public void SetWaypoints(Transform[] waypoints)
@@ -303,6 +283,11 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             }
 
             Debug.Log($"[ACTION] Patrol.cs: Added {patrolPoints.Count} waypoints for patrolling.");
+        }
+
+        private void OnDisable()
+        {
+            isPatrolling = false;
         }
     }
 }

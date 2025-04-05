@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Rendering;
 using UnityEngine;
 
 namespace _Main_Project_Files._Scripts.Pathfinding
@@ -13,6 +14,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float rotationSpeed = 100f;
         [SerializeField] private float waypointReachedDistance = 0.1f;
+        [SerializeField] private float pathfindingTimeout = 2f;
+        [SerializeField] private bool logging = true;
     
         [Header("- References")]
         [SerializeField] private Astar astar;
@@ -20,6 +23,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         private List<Node> currentPath;
         private int currentWaypointIndex;
         private bool isFollowingPath;
+        private bool isPathFindingInProgress;
+        private Vector3 targetPosition;
     
         private Coroutine followPathCoroutine;
     
@@ -37,15 +42,26 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         }
 
         #region Public Methods
-
         
-        public void FollowPath(Vector3 targetPosition)
+        public void FollowPath(Vector3 newTargetPosition)
         {
+            targetPosition = newTargetPosition;
+            StopPathFollowing();
             Vector3 startPosition = transform.position;
         
-            astar.FindPath(startPosition, targetPosition);
+            astar.FindPath(startPosition, newTargetPosition);
 
             StartCoroutine(WaitForPathAndFollow());
+        }
+
+        public bool IsFollowingPath()
+        {
+            return isFollowingPath;
+        }
+
+        public Vector3 GetTargetPosition()
+        {
+            return targetPosition;
         }
         
         #endregion
@@ -53,21 +69,38 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         #region Private Methods
         private IEnumerator WaitForPathAndFollow()
         {
-            yield return null;
-        
-            // Getting the path from the Astar script.
-            currentPath = astar.CurrentPath;
+            isPathFindingInProgress = true;
+            
+            float startTime = Time.time;
+            while (Time.time < startTime + pathfindingTimeout)
+            {
+                currentPath = astar.CurrentPath;
+                
+                if (currentPath != null && currentPath.Count > 0)
+                {
+                    break;
+                }
+                
+                yield return null;
+            }
+
+            isPathFindingInProgress = false;
 
             if (currentPath != null && currentPath.Count > 0)
             {
-                // Stop existing path follow.
-                StopPathFollowing();
-                // Start the trajectory.
                 followPathCoroutine = StartCoroutine(FollowPathCoroutine());
+
+                if (logging)
+                {
+                    for (int i = 0; i < currentPath.Count; i++)
+                    {
+                        Debug.Log($"Agent.cs: Path node {i}: {currentPath[i].Position}");
+                    }
+                }
             }
             else
             {
-                Debug.LogError("Agent.cs: No path to follow.");
+                Debug.LogWarning($"Agent.cs: No path found or pathfinding timed out when trying to reach {targetPosition}");
             }
         }
 
@@ -75,85 +108,68 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         {
             isFollowingPath = true;
             currentWaypointIndex = 0;
-
-            float fixedHeight = transform.position.y;
             
+            float fixedHeight = transform.position.y;
+
             while (isFollowingPath && currentPath != null && currentWaypointIndex < currentPath.Count)
             {
-                // Get current target.
                 Node targetNode = currentPath[currentWaypointIndex];
-                Vector3 targetPosition = targetNode.Position;
+                Vector3 nodePosition = targetNode.Position;
                 
-                // Y Offset.
-                targetPosition.y = fixedHeight;
+                nodePosition.y = fixedHeight;
                 
-                // Get direction to target.
-                Vector3 directionToTarget = (targetPosition - transform.position).normalized;
-            
-                // Get the distance.
-                float distanceToTarget = Vector3.Distance(transform.position, targetPosition);
+                Vector3 directionToTarget = (nodePosition - targetNode.Position).normalized;
+                
+                float distanceToTarget = Vector3.Distance(targetNode.Position, nodePosition);
 
                 if (distanceToTarget < waypointReachedDistance)
                 {
                     currentWaypointIndex++;
-                
-                    // If the end was reached:
+
                     if (currentWaypointIndex >= currentPath.Count)
                     {
                         isFollowingPath = false;
-                        Debug.Log("Agent.cs: No path to follow.");
+                        Debug.Log($"Agent.cs: Path completed. Reached final destination near {targetPosition}.");
                         break;
                     }
-                    continue;
                 }
-            
-                // Rotate agent towards target.
+
                 if (directionToTarget != Vector3.zero)
                 {
                     Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
                     transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
                 }
-            
-                // Move towards target.
+                
                 transform.position += transform.forward * moveSpeed * Time.deltaTime;
                 yield return null;
             }
+
             isFollowingPath = false;
+
+            float finalDistance = Vector3.Distance(transform.position, targetPosition);
+
+            if (finalDistance <= waypointReachedDistance * 2)
+            {
+                Debug.Log($"Agent.cs: Path completed. Reached {targetPosition}.");
+            }
+            else
+            {
+                Debug.LogWarning($"Agent.cs Path completed but agent is {finalDistance:F2} from the actual target.");
+            }
         }
 
         private void StopPathFollowing()
         {
+            if (isFollowingPath)
+            {
+                Debug.Log($"Agent.cs: Stopping current path following.");
+            }
+            
             isFollowingPath = false;
             if (followPathCoroutine != null)
             {
                 StopCoroutine(followPathCoroutine);
                 followPathCoroutine = null;
-            }
-        }
-
-        private void OnDrawGizmos()
-        {
-            if (!isFollowingPath || currentPath == null || currentPath.Count == 0) return;
-        
-            Gizmos.color = Color.red;
-
-            for (int i = currentWaypointIndex; i < currentPath.Count - 1; i++)
-            {
-                Vector3 startPosition = currentPath[i].Position;
-                Vector3 endPosition = currentPath[i + 1].Position;
-            
-                // Y above ground for visibility.
-                startPosition.y += .2f;
-                endPosition.y += .2f; 
-            
-                Gizmos.DrawLine(startPosition, endPosition);
-            }
-
-            if (currentWaypointIndex < currentPath.Count)
-            {
-                Vector3 currentTarget = currentPath[currentWaypointIndex].Position;
-                currentTarget.y += .2f;
-                Gizmos.DrawSphere(currentTarget, 0.2f);
             }
         }
         

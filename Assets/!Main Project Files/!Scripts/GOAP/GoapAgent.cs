@@ -10,21 +10,26 @@ namespace _Main_Project_Files._Scripts.GOAP
 {
     public class GoapAgent : MonoBehaviour
     {
-        [Header("- Agent Settings")] [SerializeField]
-        private string agentName = "GOAP Agent";
+        [Header("- Agent Settings")] 
+        [SerializeField] private string agentName = "GOAP Agent";
         [SerializeField] private float planningInterval = 1f;
+        [SerializeField] private float actionExecutionCooldown = 0.5f;
 
-        [Header("- Goal Settings")] [SerializeField]
-        private string activeGoalState = "";
+        [Header("- Goal Settings")] 
+        [SerializeField] private string activeGoalState = "";
         [SerializeField] private bool activeGoalValue = true;
 
-        [Header("- Debug")] [SerializeField] private bool debugMode = true;
-
+        [Header("- Debug")] 
+        [SerializeField] private bool debugMode = true;
+        
         private WorldState worldState;
         private List<Action> availableActions = new List<Action>();
         private Queue<Action> currentPlan = new Queue<Action>();
         private Agent pathfindingAgent;
         private bool isExecutingPlan = false;
+        private Action currentAction = null;
+        private Coroutine planningCoroutine;
+        private Coroutine executionCoroutine;
 
         public WorldState WorldState => worldState;
         public string ActiveGoalState => activeGoalState;

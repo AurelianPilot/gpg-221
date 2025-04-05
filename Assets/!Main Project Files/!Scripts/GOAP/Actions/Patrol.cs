@@ -1,10 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using _Main_Project_Files._Scripts.Pathfinding;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering;
 
 namespace _Main_Project_Files._Scripts.GOAP.Actions
 {
@@ -15,14 +13,28 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         [SerializeField] private float arrivalDistance = 0.5f;
         [SerializeField] private string isPatrollingStateName = "IsPatrolling";
         [SerializeField] private string areaPatrolledStateName = "AreaPatrolled";
+        [SerializeField] private int numberOfGeneratedPoints = 3;
 
+        [Header("- Debug")] 
+        [SerializeField] private bool showDebugPoints = true;
+        [SerializeField] private bool logging = true;
+        
         private Agent pathfindingAgent;
+        private GridManager gridManager;
+        private bool isPatrolling;
+        private int currentWaypointIndex;
 
         private void Awake()
         {
             actionName = "Patrol";
             isActionAchivable = true;
 
+            gridManager = FindObjectOfType<GridManager>();
+            if (gridManager == null)
+            {
+                Debug.LogError("[ACTION] Patrol.cs: No grid manager found.");
+            }
+            
             if (effects.Count == 0)
             {
                 AddEffect(isPatrollingStateName, true);
@@ -32,8 +44,13 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
         private void Start()
         {
-            GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag("PatrolPoint");
+            if (patrolPoints.Count > 0)
+            {
+                Debug.Log($"[ACTION] Patrol.cs: Using {patrolPoints.Count} pre-assigned points.");
+                return;
+            }
 
+            GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag("PatrolPoint");
             if (waypointObjects.Length > 0)
             {
                 Transform[] waypoints = new Transform[waypointObjects.Length];
@@ -41,8 +58,31 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 {
                     waypoints[i] = waypointObjects[i].transform;
                 }
-                
+
                 SetWaypoints(waypoints);
+            }
+
+            if (gridManager != null)
+            {
+                if (gridManager == null) return;
+                Debug.Log("[ACTION] Patrol.cs: Generating patrol points randomly on grid.");
+
+                for (int i = 0; i < numberOfGeneratedPoints; i++)
+                {
+                    Node randomNode = GetRandomWalkableNode();
+                    if (randomNode != null)
+                    {
+                        GameObject patrolPointObject = new GameObject($"PatrolPoint{i + 1}");
+                        patrolPointObject.transform.position = randomNode.Position;
+                        
+                        patrolPoints.Add(patrolPointObject.transform);
+
+                        if (showDebugPoints)
+                        {
+                            
+                        }
+                    }
+                }
             }
             else
             {
@@ -50,6 +90,39 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             }
         }
 
+        private Node GetRandomWalkableNode()
+        {
+            if (gridManager.Nodes == null || gridManager.Nodes.Length == 0) return null;
+
+            // The magic number is to try only 50 times so it doens't go forever (workaround for a found problem).
+            for (int i = 0; i < 50; i++)
+            {
+                int randomIndex = Random.Range(0, gridManager.Nodes.Length);
+                Node node = gridManager.Nodes[randomIndex];
+
+                if (node != null && node.Walkable && !IsTooCloseToOtherPoints(node.Position))
+                {
+                    return node;
+                }
+            }
+
+            return null;
+        }
+
+        private bool IsTooCloseToOtherPoints(Vector3 position)
+        {
+            float minDistance = gridManager.NodeSize * 3; // putting some distances between points TODO: fix magic numbers later.
+            foreach (var point in patrolPoints)
+            {
+                if (Vector3.Distance(position, point.position) < minDistance)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        
         protected override IEnumerator PerformAction()
         {
             Debug.Log($"[ACTION] Patrol.cs: {gameObject.name} is patrolling.");

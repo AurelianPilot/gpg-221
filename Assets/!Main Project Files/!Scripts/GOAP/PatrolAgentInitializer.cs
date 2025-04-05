@@ -49,29 +49,16 @@ namespace _Main_Project_Files._Scripts.GOAP
             
             Patrol patrolAction = GetComponent<Patrol>();
             
-            if (patrolAction != null)
+            if (patrolAction != null && patrolPoints.Length > 0)
             {
                 patrolAction.SetWaypoints(patrolPoints);
             }
-            
-            goapAgent.SetGoal("AreaPatrolled", true);
-        }
-
-        private Node GetRandomWalkableNode(GridManager gridManager)
-        {
-            for (int i = 0; i < 50; i++)
+            else
             {
-                int randomIndex = UnityEngine.Random.Range(0, gridManager.Nodes.Length);
-                Node node = gridManager.Nodes[randomIndex];
-
-                if (node != null && node.Walkable)
-                {
-                    return node;
-                }
+                Debug.Log("PatrolAgentInitializer.cs: No patrol points found. genereting random ones.");
             }
             
-            Debug.LogWarning("PatrolAgentInitializer.cs: no walkable node found.");
-            return null;
+            goapAgent.SetGoal("AreaPatrolled", true);
         }
         
         private void Update()

@@ -25,7 +25,7 @@ namespace _Main_Project_Files._Scripts.GOAP
             bool goalValue)
         {
             // Get copy of current world state.
-            Dictionary<string, bool> currentState = new Dictionary<string, bool>();
+            Dictionary<string, bool> currentState = worldState.GetStates();
 
             // Check if goal state is already achieved.
             if (currentState.ContainsKey(goalState) && currentState[goalState] == goalValue)

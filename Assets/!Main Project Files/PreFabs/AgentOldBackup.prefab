@@ -122,12 +122,8 @@ GameObject:
   - component: {fileID: -4860785210063858446}
   - component: {fileID: -7456346363598945605}
   - component: {fileID: 5153497157487383075}
-  - component: {fileID: -1452108397003547582}
-  - component: {fileID: -3741105554038190411}
-  - component: {fileID: 3397699707040189136}
-  - component: {fileID: 8798976227926491315}
   m_Layer: 0
-  m_Name: Agent
+  m_Name: AgentOldBackup
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -164,8 +160,6 @@ MonoBehaviour:
   moveSpeed: 5
   rotationSpeed: 100
   waypointReachedDistance: 0.1
-  pathfindingTimeout: 2
-  logging: 1
   astar: {fileID: 0}
 --- !u!54 &4112377384758413027
 Rigidbody:
@@ -220,7 +214,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   agentName: GOAP Agent
   planningInterval: 1
-  actionExecutionCooldown: 0.5
   activeGoalState: 
   activeGoalValue: 1
   debugMode: 1
@@ -236,7 +229,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9a0524a30ffdd14eafe18952ece513c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionName: MoveToLocation
+  actionName: Unnamed Action
   actionCost: 1
   isActionAchivable: 0
   targetLocation: {fileID: 0}
@@ -254,7 +247,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 645bdb69e42a3cf4789de071be89407d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionName: Patrol
+  actionName: Unnamed Action
   actionCost: 1
   isActionAchivable: 0
   patrolPoints: []
@@ -262,9 +255,6 @@ MonoBehaviour:
   arrivalDistance: 0.5
   isPatrollingStateName: IsPatrolling
   areaPatrolledStateName: AreaPatrolled
-  numberOfGeneratedPoints: 3
-  showDebugPoints: 1
-  logging: 1
 --- !u!114 &5153497157487383075
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,91 +270,6 @@ MonoBehaviour:
   goapAgent: {fileID: 0}
   targetLocation: {fileID: 0}
   patrolPoints: []
---- !u!114 &-1452108397003547582
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3971989451797335000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d6bb6712593d33348bf47129e425a44d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  agentName: GOAP Agent
-  planningInterval: 1
-  actionExecutionCooldown: 0.5
-  activeGoalState: 
-  activeGoalValue: 1
-  debugMode: 1
-  teamColor: 0
-  respawnTime: 5
-  homeBase: {fileID: 0}
-  meshRenderer: {fileID: 0}
-  currentState: 0
---- !u!114 &-3741105554038190411
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3971989451797335000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 539c1782c238ada4fbea9547a3e67475, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  actionName: Capture Flag
-  actionCost: 1
-  isActionAchivable: 0
-  captureRange: 1.5
-  flagCapturedStateName: FlagCaptured
---- !u!114 &3397699707040189136
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3971989451797335000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91428531de89fff4f8d8ea0553a6f7a2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  actionName: AttackAgent
-  actionCost: 1
-  isActionAchivable: 0
-  attackRange: 2
-  attackCooldown: 1
-  enemyEliminatedStateName: EnemyEliminated
-  agentLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  detectionRadius: 10
-  attackEffectPrefab: {fileID: 0}
-  effectDuration: 0.5
---- !u!114 &8798976227926491315
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3971989451797335000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d45cfd5f837c3f4abe2ded55fa98c21, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  actionName: ExpandingTerritory
-  actionCost: 1
-  isActionAchivable: 0
-  expansionRange: 1.5
-  territoryExpandedStateName: TerritoryExpanded
-  nodeConversionTime: 2
-  maxExpansionsPerAction: 3
-  conversionEffectPrefab: {fileID: 0}
-  effectDuration: 1
 --- !u!1 &4866780445130388348
 GameObject:
   m_ObjectHideFlags: 0

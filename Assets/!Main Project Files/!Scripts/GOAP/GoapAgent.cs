@@ -36,7 +36,7 @@ namespace _Main_Project_Files._Scripts.GOAP
         public string ActiveGoalState => activeGoalState;
         public bool ActiveGoalValue => activeGoalValue;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             worldState = GetComponent<WorldState>();
             if (worldState == null)

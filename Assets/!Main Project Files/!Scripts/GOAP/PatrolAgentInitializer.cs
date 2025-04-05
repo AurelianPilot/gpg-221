@@ -19,6 +19,10 @@ namespace _Main_Project_Files._Scripts.GOAP
             if (goapAgent == null)
             {
                 goapAgent = GetComponent<GoapAgent>();
+                if (goapAgent == null)
+                {
+                    Debug.LogError($"PatrolAgentInitializer.cs: No GoapAgent script found in object.");
+                }
             }
             
             WorldState worldState = goapAgent.WorldState;
@@ -34,6 +38,15 @@ namespace _Main_Project_Files._Scripts.GOAP
                 moveAction.SetTargetLocation(targetLocation);
             }
 
+            else if (moveAction != null && targetLocation == null)
+            {
+                GridManager gridManager = FindObjectOfType<GridManager>();
+                if (gridManager != null)
+                {
+                    // LEFT HERE TODO;
+                }
+            }
+            
             Patrol patrolAction = GetComponent<Patrol>();
             
             if (patrolAction != null)
@@ -44,6 +57,23 @@ namespace _Main_Project_Files._Scripts.GOAP
             goapAgent.SetGoal("AreaPatrolled", true);
         }
 
+        private Node GetRandomWalkableNode(GridManager gridManager)
+        {
+            for (int i = 0; i < 50; i++)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, gridManager.Nodes.Length);
+                Node node = gridManager.Nodes[randomIndex];
+
+                if (node != null && node.Walkable)
+                {
+                    return node;
+                }
+            }
+            
+            Debug.LogWarning("PatrolAgentInitializer.cs: no walkable node found.");
+            return null;
+        }
+        
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.E))
@@ -58,6 +88,9 @@ namespace _Main_Project_Files._Scripts.GOAP
             worldState.SetState("IsEnemyVisible", true);
             
             goapAgent.SetGoal("AtLocation",true);
+            
+            // TODO: Add actual enemy sighting functionality here.
+            Debug.Log("PatrolAgentInitializer.cs: changing goal to move to target location.");
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace _Main_Project_Files._Scripts.GOAP
 {
@@ -26,13 +27,10 @@ namespace _Main_Project_Files._Scripts.GOAP
             // Get copy of current world state.
             Dictionary<string, bool> currentState = new Dictionary<string, bool>();
 
-            // Build a "state dictionary' 
-            // TODO: PLACEHOLDER STATE. REMOVE LATER.
-            currentState[goalState] = !goalValue;
-
             // Check if goal state is already achieved.
             if (currentState.ContainsKey(goalState) && currentState[goalState] == goalValue)
             {
+                Debug.Log($"[GOAP PLANNER] Planner.cs: Goal {goalState} = {goalValue} is already active.");
                 return new List<Action>();
             }
 
@@ -83,6 +81,7 @@ namespace _Main_Project_Files._Scripts.GOAP
             }
 
             // no plan found
+            Debug.LogWarning($"[GOAP PLANNER] Planner.cs: No plan found for goal {goalState}={goalValue}");
             return null;
         }
 
@@ -104,8 +103,10 @@ namespace _Main_Project_Files._Scripts.GOAP
         {
             // Empty plan.
             List<Action> plan = new List<Action>();
+            
             // Work backwards from the goal node.
             PlanNode currentNode = goalNode;
+            
             // Skip the first node (cause it never has any actions).
             while (currentNode.Parent != null)
             {

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using _Main_Project_Files._Scripts.Pathfinding;
 using NUnit.Framework.Internal.Execution;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Analytics;
 
@@ -57,22 +58,43 @@ namespace _Main_Project_Files._Scripts.GOAP
             StartCoroutine(PlanningRoutine());
         }
 
+        private void OnDisable()
+        {
+            if (planningCoroutine != null)
+            {
+                StopCoroutine(planningCoroutine);
+            }
+
+            if (executionCoroutine != null)
+            {
+                StopCoroutine(executionCoroutine);
+            }
+        }
+
         private void InitializeAvailableActions()
         {
             availableActions.Clear();
             Action[] actions = GetComponents<Action>();
+            
             foreach (var action in actions)
             {
                 availableActions.Add(action);
+                action.SetOwner(this);
+                
                 if (debugMode)
                 {
-                    Debug.Log($"GoapAgent.cs: Added action '{action.ActionName}'");
+                    Debug.Log($"[GOAP SYS] GoapAgent.cs: {agentName} added action '{action.ActionName}'");
                 }
             }
         }
 
         public void SetGoal(string goalState, bool goalValue)
         {
+            if (string.IsNullOrEmpty(goalState))
+            {
+                Debug.LogError($"[GOAP] GoapAgent.cs: {agentName} Can't set emtpy goal state.");
+            }
+            
             activeGoalState = goalState;
             activeGoalValue = goalValue;
 
@@ -88,12 +110,23 @@ namespace _Main_Project_Files._Scripts.GOAP
         {
             if (isExecutingPlan)
             {
-                StopAllCoroutines();
+                if (executionCoroutine != null)
+                {
+                    StopCoroutine(executionCoroutine);
+                    executionCoroutine = null;
+                }
                 isExecutingPlan = false;
                 currentPlan.Clear();
+                currentAction = null;
 
-                // Restart.
-                StartCoroutine(PlanningRoutine());
+                if (planningCoroutine != null)
+                {
+                    StopCoroutine(planningCoroutine);
+                }
+                
+                planningCoroutine = StartCoroutine(PlanningRoutine());
+                
+                Debug.Log($"[GOAP SYS] GoapAgent.cs: {agentName} aborted current plan.");
             }
         }
 
@@ -105,7 +138,7 @@ namespace _Main_Project_Files._Scripts.GOAP
                 {
                     if (CreatePlan())
                     {
-                        StartCoroutine(ExecutePlan());
+                        executionCoroutine = StartCoroutine(ExecutePlan());
                     }
                     else if (debugMode)
                     {
@@ -126,6 +159,8 @@ namespace _Main_Project_Files._Scripts.GOAP
                 {
                     Debug.Log($"GoapAgent.cs: Goal {activeGoalState} = {activeGoalValue} is already achieved.");
                 }
+
+                return false;
             }
 
             Planner planner = new Planner();
@@ -138,7 +173,6 @@ namespace _Main_Project_Files._Scripts.GOAP
                     currentPlan.Enqueue(action);
                 }
 
-                // THIS IS FOR BETTER VISUALS WHEN DEBUGGING.
                 if (debugMode)
                 {
                     Debug.Log($"GoapAgent.cs: {agentName} Created plan with {plan.Count} actions.");
@@ -164,14 +198,18 @@ namespace _Main_Project_Files._Scripts.GOAP
 
             while (currentPlan.Count > 0)
             {
-                Action currentAction = currentPlan.Dequeue();
+                currentAction = currentPlan.Dequeue();
 
                 if (debugMode)
                 {
                     Debug.Log($"GoapAgent.cs: {agentName} is executing action '{currentAction.ActionName}'");
                 }
-                
-                yield return PerformAction(currentAction);
+
+                yield return StartCoroutine(currentAction.Execute());
+
+                currentAction.ApplyEffects(worldState);
+                    
+                yield return new WaitForSeconds(actionExecutionCooldown);
 
                 if (worldState.GetState(activeGoalState) == activeGoalValue)
                 {
@@ -182,22 +220,14 @@ namespace _Main_Project_Files._Scripts.GOAP
                     break;
                 }
             }
-            isExecutingPlan = false;
-        }
-
-        private IEnumerator PerformAction(Action action)
-        {
-            action.ApplyEffects(worldState);
-            yield return new WaitForSeconds(1f);
             
-            // TODO: Add actual real action execution, this is a 'placeholder' function for now.
+            currentAction = null;
+            isExecutingPlan = false;
         }
 
         public Agent GetPathfindingAgent()
         {
             return pathfindingAgent;
         }
-        
-        
     }
 }

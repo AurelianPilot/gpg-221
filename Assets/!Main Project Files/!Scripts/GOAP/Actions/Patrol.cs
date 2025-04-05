@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Net;
+using System.Runtime.InteropServices.WindowsRuntime;
 using _Main_Project_Files._Scripts.Pathfinding;
 using UnityEditor.AssetImporters;
 using UnityEngine;
@@ -20,10 +21,9 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         [SerializeField] private string areaPatrolledStateName = "AreaPatrolled";
         [SerializeField] private int numberOfGeneratedPoints = 3;
 
-        [Header("- Debug")] 
-        [SerializeField] private bool showDebugPoints = true;
+        [Header("- Debug")] [SerializeField] private bool showDebugPoints = true;
         [SerializeField] private bool logging = true;
-        
+
         private Agent pathfindingAgent;
         private GridManager gridManager;
         private bool isPatrolling;
@@ -39,7 +39,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             {
                 Debug.LogError("[ACTION] Patrol.cs: No grid manager found.");
             }
-            
+
             if (effects.Count == 0)
             {
                 AddEffect(isPatrollingStateName, true);
@@ -65,6 +65,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 }
 
                 SetWaypoints(waypoints);
+                return;
             }
 
             if (gridManager != null)
@@ -79,7 +80,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     {
                         GameObject patrolPointObject = new GameObject($"PatrolPoint{i + 1}");
                         patrolPointObject.transform.position = randomNode.Position;
-                        
+
                         patrolPoints.Add(patrolPointObject.transform);
 
                         if (showDebugPoints)
@@ -91,7 +92,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                         }
                     }
                 }
-                
+
                 Debug.Log($"[ACTION] Patrol.cs: Generated {patrolPoints.Count} randomly on grid.");
 
                 if (logging)
@@ -102,7 +103,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     }
                 }
             }
-            
+
             else
             {
                 Debug.LogWarning("[ACTION] Patrol.cs: No waypoints found in scene.");
@@ -130,7 +131,9 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
         private bool IsTooCloseToOtherPoints(Vector3 position)
         {
-            float minDistance = gridManager.NodeSize * 3; // putting some distances between points TODO: fix magic numbers later.
+            float
+                minDistance =
+                    gridManager.NodeSize * 3; // putting some distances between points TODO: fix magic numbers later.
             foreach (var point in patrolPoints)
             {
                 if (Vector3.Distance(position, point.position) < minDistance)
@@ -141,13 +144,13 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
             return false;
         }
-        
+
         protected override IEnumerator PerformAction()
         {
             Debug.Log($"[ACTION] Patrol.cs: {gameObject.name} is patrolling.");
             isPatrolling = true;
             currentWaypointIndex = 0;
-            
+
             if (patrolPoints.Count == 0)
             {
                 Debug.LogError("[ACTION] Patrol.cs: No patrol points set.");
@@ -201,64 +204,70 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
                 if (currentWaypointIndex >= patrolPoints.Count)
                 {
-                    Debug.LogWarning($"[ACTION] Patrol.cs: Waypoint index {currentWaypointIndex} out of bounds, resetting waypoint index.");
+                    Debug.LogWarning(
+                        $"[ACTION] Patrol.cs: Waypoint index {currentWaypointIndex} out of bounds, resetting waypoint index.");
                     currentWaypointIndex = 0;
                 }
-            }
-            
-            Transform patrolPoint = patrolPoints[currentWaypointIndex];
-            if (patrolPoint == null)
-            {
-                Debug.LogWarning($"[ACTION] Patrol.cs: atrol point at index {currentWaypointIndex} not found, skipping.");
-                currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
-            }
-            
-            Debug.Log($"[ACTION] Patrol.cs: Moving to waypoint {currentWaypointIndex + 1} of {patrolPoints.Count}");
-            
-            float initialDistance = Vector3.Distance(transform.position, patrolPoint.position);
-            if (initialDistance <= arrivalDistance)
-            {
-                Debug.Log($"[ACTION] Patrol.cs: Reached waypoint {currentWaypointIndex + 1}");
-                currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
-                waypointVisitCount++;
-            }
-            
-            pathfindingAgent.FollowPath(patrolPoint.position);
 
-            float startWaitTime = Time.time;
-            float timeOut = 10f;
-            bool reachedWaypoint = false;
-
-            while (!reachedWaypoint && Time.time < startWaitTime + timeOut && isPatrolling)
-            {
-                float distance = Vector3.Distance(transform.position, patrolPoint.position);
-
-                if (distance <= arrivalDistance)
+                Transform patrolPoint = patrolPoints[currentWaypointIndex];
+                if (patrolPoint == null)
                 {
-                    reachedWaypoint = true;
-                    Debug.Log($"[ACTION] Patrol.cs: Reached waypoint {currentWaypointIndex + 1} at {Time.time - startWaitTime:F1} seconds");
+                    Debug.LogWarning(
+                        $"[ACTION] Patrol.cs: atrol point at index {currentWaypointIndex} not found, skipping.");
+                    currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
                 }
 
-                yield return null;
-            }
+                Debug.Log($"[ACTION] Patrol.cs: Moving to waypoint {currentWaypointIndex + 1} of {patrolPoints.Count}");
 
-            if (!reachedWaypoint)
-            {
-                Debug.LogWarning($"[ACTION] Patrol.cs: Timed out trying to reach waypoint {currentWaypointIndex + 1}, moving to next one.");
-            }
-            else
-            {
-                Debug.Log($"[ACTION] Patrol.cs: Waiting at waypoint {currentWaypointIndex + 1} for {patrolPointStopTime} seconds");
-                yield return new WaitForSeconds(patrolPointStopTime);
-                Debug.Log($"[ACTION] Patrol.cs: Done waiting at waypoint {currentWaypointIndex + 1}. Moving to next one.");
-            }
+                float initialDistance = Vector3.Distance(transform.position, patrolPoint.position);
+                if (initialDistance <= arrivalDistance)
+                {
+                    Debug.Log($"[ACTION] Patrol.cs: Reached waypoint {currentWaypointIndex + 1}");
+                    currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
+                    waypointVisitCount++;
+                }
 
-            currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
-            waypointVisitCount++;
+                pathfindingAgent.FollowPath(patrolPoint.position);
 
-            if (waypointVisitCount > 0 && waypointVisitCount % patrolPoints.Count == 0)
-            {
-                Debug.Log($"[ACTION] Patrol.cs: Completed circuit!! Starting again.");
+                float startWaitTime = Time.time;
+                float timeOut = 10f;
+                bool reachedWaypoint = false;
+
+                while (!reachedWaypoint && Time.time < startWaitTime + timeOut && isPatrolling)
+                {
+                    float distance = Vector3.Distance(transform.position, patrolPoint.position);
+
+                    if (distance <= arrivalDistance)
+                    {
+                        reachedWaypoint = true;
+                        Debug.Log(
+                            $"[ACTION] Patrol.cs: Reached waypoint {currentWaypointIndex + 1} at {Time.time - startWaitTime:F1} seconds");
+                    }
+
+                    yield return null;
+                }
+
+                if (!reachedWaypoint)
+                {
+                    Debug.LogWarning(
+                        $"[ACTION] Patrol.cs: Timed out trying to reach waypoint {currentWaypointIndex + 1}, moving to next one.");
+                }
+                else
+                {
+                    Debug.Log(
+                        $"[ACTION] Patrol.cs: Waiting at waypoint {currentWaypointIndex + 1} for {patrolPointStopTime} seconds");
+                    yield return new WaitForSeconds(patrolPointStopTime);
+                    Debug.Log(
+                        $"[ACTION] Patrol.cs: Done waiting at waypoint {currentWaypointIndex + 1}. Moving to next one.");
+                }
+
+                currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
+                waypointVisitCount++;
+
+                if (waypointVisitCount > 0 && waypointVisitCount % patrolPoints.Count == 0)
+                {
+                    Debug.Log($"[ACTION] Patrol.cs: Completed circuit!! Starting again.");
+                }
             }
 
             isPatrolling = false;

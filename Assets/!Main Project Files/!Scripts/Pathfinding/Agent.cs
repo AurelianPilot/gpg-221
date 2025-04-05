@@ -45,11 +45,16 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         
         public void FollowPath(Vector3 newTargetPosition)
         {
+            if (isPathFindingInProgress)
+            {
+                Debug.Log($"Agent.cs: Pathfinding already in progress to {targetPosition}, ignoring new request.");
+            }
             targetPosition = newTargetPosition;
             StopPathFollowing();
+            
             Vector3 startPosition = transform.position;
-        
-            astar.FindPath(startPosition, newTargetPosition);
+            
+            astar.FindPath(startPosition, newTargetPosition);   
 
             StartCoroutine(WaitForPathAndFollow());
         }
@@ -118,7 +123,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 
                 nodePosition.y = fixedHeight;
                 
-                Vector3 directionToTarget = (nodePosition - targetNode.Position).normalized;
+                Vector3 directionToTarget = (nodePosition - transform.position).normalized;
                 
                 float distanceToTarget = Vector3.Distance(targetNode.Position, nodePosition);
 

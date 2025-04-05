@@ -49,12 +49,14 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
         private void Start()
         {
+            // First try to use the explicitly assigned patrol points
             if (patrolPoints.Count > 0)
             {
-                Debug.Log($"[ACTION] Patrol.cs: Using {patrolPoints.Count} pre-assigned points.");
+                Debug.Log($"[ACTION] Patrol.cs: Using {patrolPoints.Count} pre-assigned patrol points.");
                 return;
             }
 
+            // Then try to find GameObjects tagged as PatrolPoint
             GameObject[] waypointObjects = GameObject.FindGameObjectsWithTag("PatrolPoint");
             if (waypointObjects.Length > 0)
             {
@@ -63,55 +65,60 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 {
                     waypoints[i] = waypointObjects[i].transform;
                 }
-
+                
                 SetWaypoints(waypoints);
+                Debug.Log($"[ACTION] Patrol.cs: Found {waypoints.Length} patrol points with tag 'PatrolPoint'.");
                 return;
             }
 
+            // If no pre-assigned or tagged points, generate random patrol points
             if (gridManager != null)
             {
-                Debug.Log("[ACTION] Patrol.cs: Generating patrol points randomly on grid.");
-
-                for (int i = 0; i < numberOfGeneratedPoints; i++)
-                {
-                    Node randomNode = GetRandomWalkableNode();
-                    if (randomNode != null)
-                    {
-                        GameObject patrolPointObject = new GameObject($"PatrolPoint{i + 1}");
-                        patrolPointObject.transform.position = randomNode.Position;
-
-                        patrolPoints.Add(patrolPointObject.transform);
-
-                        if (showDebugPoints)
-                        {
-                            GameObject visualMarker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                            visualMarker.transform.position = randomNode.Position;
-                            visualMarker.transform.localScale = Vector3.one * 0.3f;
-                            visualMarker.transform.parent = patrolPointObject.transform;
-
-                            // Add a distinctive color to better visualize
-                            Renderer renderer = visualMarker.GetComponent<Renderer>();
-                            if (renderer != null)
-                            {
-                                renderer.material.color = UnityEngine.Color.green;
-                            }
-                        }
-                    }
-                }
-
-                Debug.Log($"[ACTION] Patrol.cs: Generated {patrolPoints.Count} randomly on grid.");
-
-                if (logging)
-                {
-                    for (int i = 0; i < patrolPoints.Count; i++)
-                    {
-                        Debug.Log($"[ACTION] Patrol.cs: patrol point {i + 1} position {patrolPoints[i].position}");
-                    }
-                }
+                GenerateRandomPatrolPoints();
             }
             else
             {
-                Debug.LogWarning("[ACTION] Patrol.cs: No waypoints found in scene.");
+                Debug.LogError("[ACTION] Patrol.cs: No patrol points set and no GridManager found.");
+            }
+        }
+
+        private void GenerateRandomPatrolPoints()
+        {
+            if (gridManager == null) return;
+            
+            Debug.Log("[ACTION] Patrol.cs: Generating random patrol points from grid.");
+            
+            // Create empty GameObjects to serve as patrol points
+            for (int i = 0; i < numberOfGeneratedPoints; i++)
+            {
+                // Get random walkable nodes from the grid
+                Node randomNode = GetRandomWalkableNode();
+                if (randomNode != null)
+                {
+                    GameObject patrolPointObj = new GameObject($"RandomPatrolPoint_{i}");
+                    patrolPointObj.transform.position = randomNode.Position;
+                    
+                    patrolPoints.Add(patrolPointObj.transform);
+                    
+                    if (showDebugPoints)
+                    {
+                        GameObject visualMarker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                        visualMarker.transform.position = randomNode.Position;
+                        visualMarker.transform.localScale = Vector3.one * 0.3f;
+                        visualMarker.transform.parent = patrolPointObj.transform;
+                    }
+                }
+            }
+            
+            Debug.Log($"[ACTION] Patrol.cs: Generated {patrolPoints.Count} random patrol points.");
+            
+            // Log positions of all generated patrol points
+            if (logging)
+            {
+                for (int i = 0; i < patrolPoints.Count; i++)
+                {
+                    Debug.Log($"[ACTION] Patrol.cs: RandomPatrolPoint_{i} position: {patrolPoints[i].position}");
+                }
             }
         }
 

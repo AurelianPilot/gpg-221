@@ -43,8 +43,11 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
         private void Start()
         {
-            // ALWAYS force generating random patrol points for testing TODO: DELETE THIS LATER!11!!!.
-            ForceGenerateRandomPoints();
+            if (patrolPoints == null || patrolPoints.Count == 0)
+            {
+                Debug.Log($"[ACTION] Patrol.cs: No patrol points for {gameObject.name}, generating random ones.");
+                GenerateRandomPatrolPoints();
+            }
         }
 
         public void ForceGenerateRandomPoints()
@@ -88,9 +91,9 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 {
                     GameObject patrolPointObj = new GameObject($"RandomPatrolPoint_{i}");
                     patrolPointObj.transform.position = randomNode.Position;
-                    
+
                     patrolPoints.Add(patrolPointObj.transform);
-                    
+
                     if (showDebugPoints)
                     {
                         GameObject visualMarker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -128,7 +131,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
         private Node GetRandomWalkableNode()
         {
-            if (gridManager.Nodes == null || gridManager.Nodes.Length == 0)
+            if (gridManager == null || gridManager.Nodes == null || gridManager.Nodes.Length == 0)
             {
                 Debug.LogError("[ACTION] Patrol.cs: Grid has no nodes!");
                 return null;
@@ -136,11 +139,39 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
             // Create a list of all walkable nodes first.
             List<Node> walkableNodes = new List<Node>();
+
+            // Get current position node as reference.
+            Node currentPositionNode = gridManager.GetNodeIndex(transform.position);
+            int currentNodeIndex = (currentPositionNode != null) ? currentPositionNode.Index : -1;
+
+            // Define max distance for patrol points (prevents too distant points).
+            int maxDistance = 15;
+
             foreach (var node in gridManager.Nodes)
             {
                 if (node != null && node.Walkable)
                 {
-                    walkableNodes.Add(node);
+                    // If we have a current position, filter by distance.
+                    if (currentNodeIndex >= 0)
+                    {
+                        int nodeDistance = Mathf.Abs(node.Index - currentNodeIndex);
+                        int width = gridManager.Width;
+
+                        // Convert linear index difference to 2D grid distance.
+                        int xDist = nodeDistance % width;
+                        int zDist = nodeDistance / width;
+
+                        // If within reasonable distance, add to candidates.
+                        if (xDist <= maxDistance && zDist <= maxDistance)
+                        {
+                            walkableNodes.Add(node);
+                        }
+                    }
+                    else
+                    {
+                        // No current position reference, add all walkable nodes.
+                        walkableNodes.Add(node);
+                    }
                 }
             }
 
@@ -166,7 +197,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     return node;
                 }
 
-                // Remove this node  for next attempts.
+                // Remove this node for next attempts.
                 walkableNodes.RemoveAt(randomIndex);
             }
 
@@ -185,7 +216,9 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
 
         private bool IsTooCloseToOtherPoints(Vector3 position)
         {
-            float minDistance = gridManager.NodeSize * 3; // putting some distances between points TODO: explain magic numbers lol.
+            float
+                minDistance =
+                    gridManager.NodeSize * 3; // putting some distances between points TODO: explain magic numbers lol.
             foreach (var point in patrolPoints)
             {
                 if (Vector3.Distance(position, point.position) < minDistance)
@@ -273,7 +306,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     Debug.LogWarning(
                         $"[ACTION] Patrol.cs: Patrol point at index {currentWaypointIndex} not found, skipping.");
                     currentWaypointIndex = (currentWaypointIndex + 1) % patrolPoints.Count;
-                    
+
                     // Important: skip to next iteration if this point is null (bug fix).
                     continue;
                 }

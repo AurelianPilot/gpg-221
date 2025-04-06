@@ -14,8 +14,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         private readonly List<Node> openList = new();
         private readonly List<Node> closeList = new();
 
-        // In here I'm storing the current path for external access (for the agent).
-        public List<Node> CurrentPath { get; private set; } = new List<Node>();
+        // public List<Node> CurrentPath { get; private set; } = new List<Node>();
 
         [Header("- Path Settings")] [SerializeField]
         private Vector3 startPosition;
@@ -50,7 +49,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
         #region Public Methods
 
-        public void FindPath(Vector3 start, Vector3 goal)
+        public List<Node> FindPath(Vector3 start, Vector3 goal)
         {
             // Get the indexes from the position of our nodes.
             startNode = _grid.GetNodeIndex(start);
@@ -59,14 +58,13 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             if (startNode == null || goalNode == null)
             {
                 Debug.LogError($"Astar.cs in {gameObject.name}: Start or goal position is outside the grid.");
-                return;
+                return new List<Node>(); 
             }
 
             // Clear to start fresh every time this method runs.
             openList.Clear();
             closeList.Clear();
-            CurrentPath.Clear();
-
+            
             // Initializes the start node.
             startNode.GCost = 0;
             startNode.HCost = CalculateHCost(startNode, goalNode);
@@ -78,8 +76,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             openList.Add(startNode);
 
             // Debug visualizer.
-            startNode.UpdateVisuals(NodeState.Open);
-            goalNode.UpdateVisuals(NodeState.Closed);
+            //startNode.UpdateVisuals(NodeState.Open);
+            //goalNode.UpdateVisuals(NodeState.Closed);
 
             // Pathfinding loop:
             while (openList.Count > 0)
@@ -88,8 +86,8 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
                 if (currentNode == goalNode)
                 {
-                    RetracePath(startNode, goalNode);
-                    return;
+                    // CHANGED: Return path instead of storing it
+                    return RetracePath(startNode, goalNode);
                 }
 
                 // Move current node from the open to the closed list.
@@ -123,6 +121,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             }
 
             Debug.LogWarning($"Astar.cs in {gameObject.name}: No path found.");
+            return new List<Node>();
         }
 
         #endregion
@@ -132,7 +131,16 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         private void RunPathfinding()
         {
             ResetVisualization();
-            FindPath(startPosition, goalPosition);
+            
+            List<Node> path = FindPath(startPosition, goalPosition);
+            
+            /*if (path.Count > 0)
+            {
+                foreach (var node in path)
+                {
+                    node.UpdateVisuals(NodeState.Path);
+                }
+            }*/
         }
 
         private void ResetVisualization()
@@ -151,7 +159,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             openList.Clear();
             closeList.Clear();
-            CurrentPath.Clear();
         }
 
         // Calculate the Manhattan distance between two nodes.
@@ -168,7 +175,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         }
 
         // Helping methods.
-        private void RetracePath(Node node, Node goalNode)
+        private List<Node> RetracePath(Node node, Node goalNode)
         {
             var path = new List<Node>();
             var currentNode = goalNode;
@@ -182,12 +189,13 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             // This reverses the order:
             path.Reverse();
 
-            // Set CurrentPath to the reversed path
-            CurrentPath = new List<Node>(path);
+            // CurrentPath = new List<Node>(path);
 
-            foreach (var _node in path) _node.UpdateVisuals(NodeState.Path);
+            //foreach (var _node in path) _node.UpdateVisuals(NodeState.Path);
 
             Debug.Log($"Path found, {path.Count} nodes in path.");
+            
+            return path; // CHANGED: Return the path
         }
 
         private Node FindLowestFCostNode(List<Node> nodeList)

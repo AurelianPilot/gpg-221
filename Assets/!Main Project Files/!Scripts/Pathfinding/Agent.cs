@@ -18,7 +18,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [SerializeField] private bool logging = true;
     
         [Header("- References")]
-        [SerializeField] private Astar astar;
+        [SerializeField] public Astar astar;
 
         private List<Node> currentPath;
         private int currentWaypointIndex;
@@ -45,18 +45,18 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         
         public void FollowPath(Vector3 newTargetPosition)
         {
-            if (isPathFindingInProgress)
+            /*if (isPathFindingInProgress)
             {
                 Debug.Log($"Agent.cs: Pathfinding already in progress to {targetPosition}, ignoring new request to {newTargetPosition}");
                 return;
-            }
-            
+            }*/
+    
             targetPosition = newTargetPosition;
             StopPathFollowing();
-            
+    
             Vector3 startPosition = transform.position;
             Debug.Log($"Agent.cs: Finding path from {startPosition} to {targetPosition}");
-            
+    
             astar.FindPath(startPosition, targetPosition);
 
             StartCoroutine(WaitForPathAndFollow());
@@ -78,20 +78,14 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         private IEnumerator WaitForPathAndFollow()
         {
             isPathFindingInProgress = true;
-            
-            float startTime = Time.time;
-            while (Time.time < startTime + pathfindingTimeout)
-            {
-                currentPath = astar.CurrentPath;
-                
-                if (currentPath != null && currentPath.Count > 0)
-                {
-                    break;
-                }
-                
-                yield return null;
-            }
-
+    
+            // CHANGED: Get path directly from FindPath call
+            Vector3 startPosition = transform.position;
+            Debug.Log($"Agent.cs: Finding path from {startPosition} to {targetPosition}");
+    
+            // Call FindPath and store the result directly
+            currentPath = astar.FindPath(startPosition, targetPosition);
+    
             isPathFindingInProgress = false;
 
             if (currentPath != null && currentPath.Count > 0)
@@ -110,9 +104,13 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             else
             {
                 Debug.LogWarning($"Agent.cs: No path found or pathfinding timed out when trying to reach {targetPosition}");
+                // Add direct movement fallback
+                StartCoroutine(DirectMovementFallback());
             }
-        }
 
+            yield return null;
+        }
+        
         private IEnumerator FollowPathCoroutine()
         {
             isFollowingPath = true;
@@ -127,6 +125,12 @@ namespace _Main_Project_Files._Scripts.Pathfinding
 
             while (isFollowingPath && currentPath != null && currentWaypointIndex < currentPath.Count)
             {
+                if ((currentPath == null || currentPath.Count == 0) && targetPosition != Vector3.zero)
+                {
+                    // Use direct movement if no path was found.
+                    StartCoroutine(DirectMovementFallback());
+                }
+                
                 Node targetNode = currentPath[currentWaypointIndex];
                 Vector3 nodePosition = targetNode.Position;
                 
@@ -170,6 +174,7 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 }
                 
                 transform.position += transform.forward * moveSpeed * Time.deltaTime;
+                Debug.Log($"Agent.cs: Moving agent {gameObject.name}, current pos: {transform.position}");
                 yield return null;
             }
 
@@ -190,6 +195,22 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             }
         }
 
+        private IEnumerator DirectMovementFallback()
+        {
+            Debug.Log($"Agent.cs: Using direct movement to {targetPosition}");
+    
+            while (Vector3.Distance(transform.position, targetPosition) > waypointReachedDistance)
+            {
+                Vector3 direction = (targetPosition - transform.position).normalized;
+                transform.position += direction * moveSpeed * Time.deltaTime;
+                transform.rotation = Quaternion.LookRotation(direction);
+        
+                yield return null;
+            }
+    
+            Debug.Log($"Agent.cs: Reached target {targetPosition} using direct movement");
+        }
+        
         private void StopPathFollowing()
         {
             if (isFollowingPath)
@@ -203,6 +224,11 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 StopCoroutine(followPathCoroutine);
                 followPathCoroutine = null;
             }
+        }
+        
+        public Astar GetAstar()
+        {
+            return astar;
         }
         
         #endregion

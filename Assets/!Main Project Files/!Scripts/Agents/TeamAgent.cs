@@ -1,5 +1,6 @@
 using System.Collections;
 using _Main_Project_Files._Scripts.GOAP;
+using _Main_Project_Files._Scripts.GOAP.Actions;
 using _Main_Project_Files._Scripts.Pathfinding;
 using UnityEditor.Build.Content;
 using UnityEngine;
@@ -58,15 +59,46 @@ namespace _Main_Project_Files._Scripts.Agents
         
         private void Start()
         {
+            Agent pathAgent = GetPathfindingAgent();
+            if (pathAgent != null)
+            {
+                // Forcing a valid reference to Astar\
+                if (pathAgent.astar == null)
+                {
+                    pathAgent.astar = FindObjectOfType<Astar>();
+                    Debug.Log($"[TEAM AGENT] Set missing Astar reference for {gameObject.name}");
+                }
+            }
+            
+            // Create homeBase if it doesn't exist.
+            if (homeBase == null)
+            {
+                homeBase = new GameObject($"{teamColor}HomeBase_{gameObject.name}").transform;
+                homeBase.position = transform.position;
+                homeBase.parent = transform;
+                Debug.Log($"[TEAM AGENT] Created home base for {gameObject.name} ({teamColor}) at {transform.position}");
+            }
+    
             // Register the agent with game manager.
             if (gameManager != null)
                 gameManager.RegisterAgent(this);
-                
+        
             // Initialize world state.
             WorldState.SetState("IsDead", false);
             WorldState.SetState("HasFlag", false);
             WorldState.SetState("IsInHomeTerritory", true);
-            
+    
+            // Make sure the agent has a patrol action.
+            Patrol patrolAction = GetComponent<Patrol>();
+            if (patrolAction == null)
+            {
+                patrolAction = gameObject.AddComponent<Patrol>();
+                Debug.Log($"[TEAM AGENT] Added missing Patrol action to {gameObject.name}");
+            }
+    
+            // Generate patrol points if needed.
+            patrolAction.ForceGenerateRandomPoints();
+    
             // Set initial goal as patrolling to start.
             SetGoal("IsPatrolling", true);
         }
@@ -87,7 +119,7 @@ namespace _Main_Project_Files._Scripts.Agents
             
             meshRenderer.material.color = teamColorValue;
         }
-
+        
         public void SetTeamColor(TeamColor color)
         {
             teamColor = color;
@@ -204,6 +236,11 @@ namespace _Main_Project_Files._Scripts.Agents
             {
                 Debug.Log($"[TEAM AGENT] {gameObject.name} ({teamColor}) entered {territoryColor} territory!");
             }
+        }
+        
+        public AgentState GetAgentState()
+        {
+            return currentState;
         }
         
     }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using _Main_Project_Files._Scripts.Agents;
 using _Main_Project_Files._Scripts.Pathfinding;
+using UnityEditor;
 using UnityEngine;
 
 namespace _Main_Project_Files._Scripts
@@ -116,6 +117,19 @@ namespace _Main_Project_Files._Scripts
                 GameObject agent = Instantiate(agentPrefab, spawnPosition, Quaternion.identity);
                 agent.name = $"{teamColor}Agent_{i}";
                 agent.GetComponent<TeamAgent>().SetTeamColor(teamColor);
+                
+                Agent pathAgent = agent.GetComponent<Agent>();
+                if (pathAgent == null)
+                {
+                    pathAgent = agent.AddComponent<Agent>();
+                }
+                Astar astar = FindObjectOfType<Astar>();
+                if (astar != null)
+                {
+                    SerializedObject serializedObject = new SerializedObject(pathAgent);
+                    serializedObject.FindProperty("astar").objectReferenceValue = astar;
+                    serializedObject.ApplyModifiedProperties();
+                }
                 
                 // FORCE THE Y POSITION (bug fix, idk why the previous one isn't working)
                 agent.transform.position = new Vector3(

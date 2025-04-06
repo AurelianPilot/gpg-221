@@ -9,7 +9,8 @@ namespace _Main_Project_Files._Scripts
     {
         [Header("- Spawn Settings")]
         [SerializeField] private bool spawnOnStart = true;
-        [SerializeField] private TeamAgent agentPrefab;
+        [SerializeField] private GameObject agentPrefab;
+        [SerializeField] private float spawnOffsetY = 1f;
         
         [Header("- Team Configuration")]
         [SerializeField] private int agentsPerTeam = 2;
@@ -107,14 +108,21 @@ namespace _Main_Project_Files._Scripts
                     if (node != null)
                     {
                         spawnPosition = node.Position;
-                        spawnPosition.y += 0.5f;
+                        spawnPosition.y += spawnOffsetY;    
                     }
                 }
                 
                 // Spawn agent.
-                TeamAgent agent = Instantiate(agentPrefab, spawnPosition, Quaternion.identity);
+                GameObject agent = Instantiate(agentPrefab, spawnPosition, Quaternion.identity);
                 agent.name = $"{teamColor}Agent_{i}";
-                agent.SetTeamColor(teamColor);
+                agent.GetComponent<TeamAgent>().SetTeamColor(teamColor);
+                
+                // FORCE THE Y POSITION (bug fix, idk why the previous one isn't working)
+                agent.transform.position = new Vector3(
+                    agent.transform.position.x,
+                    spawnOffsetY,
+                    agent.transform.position.z
+                );
                 
                 // Set home base reference.
                 GameObject homeBaseObj = new GameObject($"{teamColor}HomeBase_{i}");

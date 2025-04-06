@@ -12,7 +12,7 @@ namespace _Main_Project_Files._Scripts
         [SerializeField] private bool debugMode = true;
         
         [Header("- Team Setup")]
-        [SerializeField] private TeamAgent agentPrefab;
+        [SerializeField] private GameObject agentPrefab;
         [SerializeField] private int agentsPerTeam = 3;
         [SerializeField] private Transform[] redTeamSpawnPoints;
         [SerializeField] private Transform[] blueTeamSpawnPoints;
@@ -97,16 +97,16 @@ namespace _Main_Project_Files._Scripts
             for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 spawnPos = spawnPoints[i].position;
-                TeamAgent newAgent = Instantiate(agentPrefab, spawnPos, Quaternion.identity);
+                GameObject newAgent = Instantiate(agentPrefab, spawnPos, Quaternion.identity);
                 
                 newAgent.name = $"{teamColor}Agent_{i}";
-                newAgent.SetTeamColor(teamColor);
+                newAgent.GetComponent<TeamAgent>().SetTeamColor(teamColor);
                 
                 // Set home base/territory.
-                if (newAgent.HomeBase == null)
+                if (newAgent.GetComponent<TeamAgent>().HomeBase == null)
                     newAgent.transform.Find("HomeBase").transform.position = spawnPos;
                 
-                RegisterAgent(newAgent);
+                RegisterAgent(newAgent.GetComponent<TeamAgent>());
                 
                 if (debugMode)
                     Debug.Log($"[GAME MANAGER] Spawned {teamColor} agent at {spawnPos}");

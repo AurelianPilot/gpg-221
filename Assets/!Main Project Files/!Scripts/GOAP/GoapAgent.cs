@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using _Main_Project_Files._Scripts.Pathfinding;
 using NUnit.Framework.Internal.Execution;
 using Unity.VisualScripting;
@@ -21,6 +22,10 @@ namespace _Main_Project_Files._Scripts.GOAP
         [SerializeField] private string activeGoalState = "";
         [SerializeField] private bool activeGoalValue = true;
 
+        [Header("- Random Goals Settings")]
+        [SerializeField] private float minGoalChangeSeconds = 2f;
+        [SerializeField] private float maxGoalChangeSeconds = 5f;
+        
         [Header("- Debug")] 
         [SerializeField] private bool debugMode = true;
         
@@ -155,7 +160,7 @@ namespace _Main_Project_Files._Scripts.GOAP
         {
             while (true)
             {
-                yield return new WaitForSeconds(Random.Range(10f, 30f));
+                yield return new WaitForSeconds(Random.Range(minGoalChangeSeconds, maxGoalChangeSeconds));
                 
                 string[] possibleGoals = {"IsPatrolling", "FlagCaptured", "TerritoryExpanded", "EnemyEliminated"};
                 string randomGoal = possibleGoals[Random.Range(0, possibleGoals.Length)];

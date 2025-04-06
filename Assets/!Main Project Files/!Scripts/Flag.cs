@@ -1,5 +1,6 @@
 using System.Collections;
 using _Main_Project_Files._Scripts.Agents;
+using _Main_Project_Files._Scripts.Pathfinding;
 using UnityEngine;
 
 namespace _Main_Project_Files._Scripts
@@ -70,6 +71,7 @@ namespace _Main_Project_Files._Scripts
             // Skip if already owned by this team.
             if (ownerTeam == newOwner) return;
 
+            TeamColor previousOwner = ownerTeam;
             ownerTeam = newOwner;
             UpdateFlagColor();
 
@@ -78,6 +80,37 @@ namespace _Main_Project_Files._Scripts
             // Notify game manager of capture.
             if (gameManager != null)
                 gameManager.OnFlagCaptured(this, newOwner);
+                
+            // Try to update the territory as well
+            UpdateTerritoryOwnership(previousOwner, newOwner);
+        }
+        
+        private void UpdateTerritoryOwnership(TeamColor previousOwner, TeamColor newOwner)
+        {
+            if (gameManager == null) return;
+            
+            // Get the territories
+            Territory previousTerritory = gameManager.GetTeamTerritory(previousOwner);
+            Territory newTerritory = gameManager.GetTeamTerritory(newOwner);
+            
+            if (previousTerritory != null && newTerritory != null)
+            {
+                // Capture a portion of the previous owner's territory
+                int nodesToCapture = previousTerritory.TerritoryNodes.Count / 2; // Capture half the territory
+                
+                if (nodesToCapture > 0)
+                {
+                    Debug.Log($"[FLAG] Capturing {nodesToCapture} nodes from {previousOwner} territory for {newOwner}");
+                    
+                    // Transfer nodes one by one up to the limit
+                    for (int i = 0; i < nodesToCapture && previousTerritory.TerritoryNodes.Count > 0; i++)
+                    {
+                        Node node = previousTerritory.TerritoryNodes[0]; // Get the first node
+                        previousTerritory.RemoveNode(node);
+                        newTerritory.AddNode(node);
+                    }
+                }
+            }
         }
 
         private void OnTriggerEnter(Collider other)

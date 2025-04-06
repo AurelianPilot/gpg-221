@@ -90,20 +90,6 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 }
             }
 
-            // Check if target was killed.
-            if (targetAgent == null || targetAgent.IsDead)
-            {
-                // This sets a world state. The plan can check "EnemyTerritoryCleared" later if enough agents are killed.
-                teamAgent.WorldState.SetState("EnemyEliminated", true);
-
-                // Possibly check if all enemies are dead
-                if (gameManager != null && gameManager.CheckAllEnemiesDead(teamAgent.TeamColor))
-                {
-                    // This example sets a new world state indicating no enemy remains.
-                    teamAgent.WorldState.SetState("EnemyTerritoryCleared", true);
-                }
-            }
-
             Debug.Log("[ACTION] AttackAgent.cs: Attack action completed.");
             teamAgent.SetAgentState(AgentState.Patrolling);
         }
@@ -123,8 +109,12 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                 Destroy(effect, effectDuration);
             }
 
-            // This is a one-hit kill system.
             targetAgent.Die();
+            if (CheckAllEnemiesDead(targetAgent.TeamColor))
+            {
+                teamAgent.WorldState.SetState("EnemiesDefeated", true);
+            }
+            teamAgent.WorldState.SetState("HasEnergy", true);
 
             if (gameManager != null)
             {
@@ -139,7 +129,6 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         {
             if (teamAgent == null) return null;
 
-            // Check for agents in range.
             Collider[] agentColliders = Physics.OverlapSphere(transform.position, detectionRadius, agentLayer);
             TeamAgent closestEnemy = null;
             float closestDistance = float.MaxValue;
@@ -148,7 +137,6 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             {
                 TeamAgent potentialTarget = col.GetComponentInParent<TeamAgent>();
 
-                // Check if it's a valid enemy (different team and not dead).
                 if (potentialTarget != null &&
                     potentialTarget.TeamColor != teamAgent.TeamColor &&
                     !potentialTarget.IsDead)
@@ -187,7 +175,22 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
                     }
                 }
             }
+
             return closestEnemy;
+        }
+
+        private bool CheckAllEnemiesDead(TeamColor color)
+        {
+            if (gameManager == null) return false;
+            List<TeamAgent> enemyTeam = gameManager.GetTeamAgents(color);
+            foreach (TeamAgent agent in enemyTeam)
+            {
+                if (!agent.IsDead)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

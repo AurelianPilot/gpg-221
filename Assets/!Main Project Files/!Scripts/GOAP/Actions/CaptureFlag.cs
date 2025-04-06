@@ -20,7 +20,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             if (preRequisites.Count == 0)
             {
                 AddPreRequisite("IsDead", false);
-                AddPreRequisite("DefendingTeamDefeated", true);
+                AddPreRequisite("TeamDefeated", true);
             }
             if (effects.Count == 0)
             {

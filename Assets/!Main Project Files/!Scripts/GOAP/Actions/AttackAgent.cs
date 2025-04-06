@@ -87,7 +87,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
             targetAgent.Die();
             if (CheckAllEnemiesDead(targetAgent.TeamColor))
             {
-                teamAgent.WorldState.SetState("DefendingTeamDefeated", true);
+                teamAgent.WorldState.SetState("TeamDefeated", true);
             }
             teamAgent.WorldState.SetState("HasEnergy", true);
             if (gameManager != null) gameManager.OnAgentKilled(targetAgent, teamAgent);

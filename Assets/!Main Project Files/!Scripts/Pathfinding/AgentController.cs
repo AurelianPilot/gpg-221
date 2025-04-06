@@ -1,5 +1,3 @@
-using System;
-using System.Xml.Serialization;
 using UnityEngine;
 
 namespace _Main_Project_Files._Scripts.Pathfinding
@@ -10,6 +8,10 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [SerializeField] private GameObject agentPrefab;
         [SerializeField] private Vector3 startPosition;
         [SerializeField] private float agentYOffset = 0.5f;
+        /// <summary>
+        /// Don't activate this unless its to debug Astar, it will break the flag sim.
+        /// </summary>
+        [SerializeField] private bool spawnSingleAgent;
         
         [Header("- References")]
         [SerializeField] private GridManager gridManager;
@@ -25,7 +27,10 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             if (astar == null) astar = FindObjectOfType<Astar>();
             mainCamera = Camera.main;
 
-            CreateAgent();
+            if (spawnSingleAgent)
+            {
+                CreateAgent();
+            }
         }
 
         private void CreateAgent()

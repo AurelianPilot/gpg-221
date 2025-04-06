@@ -60,6 +60,12 @@ namespace _Main_Project_Files._Scripts.Pathfinding
                 return;
             }
             
+            if (state == NodeState.Path || state == NodeState.Open || state == NodeState.Closed)
+            {
+                // Don't update color if it's a pathfinding visualization
+                return;
+            }
+            
             Color newColor = state switch
             {
                 NodeState.Default => defaultColor,

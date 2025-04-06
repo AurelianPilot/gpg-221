@@ -7,69 +7,90 @@ namespace _Main_Project_Files._Scripts
 {
     public class GameManager : MonoBehaviour
     {
-        [Header("- Game Settings")]
-        [SerializeField] private bool autoStartSimulation = true;
+        [Header("- Game Settings")] [SerializeField]
+        private bool autoStartSimulation = true;
+
         [SerializeField] private bool debugMode = true;
-        
-        [Header("- Team Setup")]
-        [SerializeField] private GameObject agentPrefab;
+
+        [Header("- Team Setup")] [SerializeField]
+        private GameObject agentPrefab;
+
         [SerializeField] private int agentsPerTeam = 3;
         [SerializeField] private Transform[] redTeamSpawnPoints;
         [SerializeField] private Transform[] blueTeamSpawnPoints;
         [SerializeField] private Transform[] greenTeamSpawnPoints;
         [SerializeField] private Transform[] yellowTeamSpawnPoints;
-        
-        [Header("- Grid Setup")]
-        [SerializeField] private GridManager gridManager;
-        
+
+        [Header("- Grid Setup")] [SerializeField]
+        private GridManager gridManager;
+
         private Dictionary<TeamColor, List<TeamAgent>> teamAgents = new Dictionary<TeamColor, List<TeamAgent>>();
         private Dictionary<TeamColor, Territory> teamTerritories = new Dictionary<TeamColor, Territory>();
         private Dictionary<TeamColor, Flag> teamFlags = new Dictionary<TeamColor, Flag>();
         private bool simulationRunning = false;
-        
+
         private void Awake()
         {
-            // Initialize dictionaries.
             foreach (TeamColor color in System.Enum.GetValues(typeof(TeamColor)))
             {
                 teamAgents[color] = new List<TeamAgent>();
                 teamTerritories[color] = null;
                 teamFlags[color] = null;
             }
-            
+
             if (gridManager == null)
                 gridManager = FindObjectOfType<GridManager>();
         }
-        
+
         private void Start()
         {
             if (autoStartSimulation)
                 StartSimulation();
         }
 
+        private void Update()
+        {
+            if (Time.frameCount % 300 == 0)
+            {
+                TeamColor randomTeam = (TeamColor)Random.Range(0, 4);
+                List<TeamAgent> agents = GetTeamAgents(randomTeam);
+
+                if (agents.Count > 0)
+                {
+                    int randomAgentIndex = Random.Range(0, agents.Count);
+                    if (randomAgentIndex < agents.Count)
+                    {
+                        TeamAgent agent = agents[randomAgentIndex];
+                        if (agent != null && !agent.IsDead)
+                        {
+                            agent.SetGoal("TerritoryExpanded", true);
+                            Debug.Log($"[GAME MANAGER] Prompting {agent.gameObject.name} to expand territory");
+                        }
+                    }
+                }
+            }
+        }
+
         public void StartSimulation()
         {
             if (simulationRunning) return;
-            
+
             Debug.Log("[GAME MANAGER] Starting capture the flag simulation!");
-            
-            // Initialize teams if they don't exist.
+
             if (CountAllAgents() == 0)
                 SpawnTeams();
-                
+
             simulationRunning = true;
         }
 
         public void StopSimulation()
         {
             if (!simulationRunning) return;
-            
+
             Debug.Log("[GAME MANAGER] Stopping simulation!!!!!!!!!!!!!!!!!!!!!!!!!!! RAAAAAAAAAAAAAAAAAAAH");
             simulationRunning = false;
-            
-            // TODO: Could add code to pause agents here.
         }
-        
+
         private void SpawnTeams()
         {
             SpawnTeam(TeamColor.Red, redTeamSpawnPoints);
@@ -85,43 +106,42 @@ namespace _Main_Project_Files._Scripts
                 Debug.LogError("[GAME MANAGER] Cannot spawn teams: Agent prefab is not set!");
                 return;
             }
-            
+
             if (spawnPoints == null || spawnPoints.Length == 0)
             {
                 Debug.LogWarning($"[GAME MANAGER] No spawn points set for {teamColor} team!");
                 return;
             }
-            
+
             int spawnCount = Mathf.Min(agentsPerTeam, spawnPoints.Length);
-            
+
             for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 spawnPos = spawnPoints[i].position;
                 GameObject newAgent = Instantiate(agentPrefab, spawnPos, Quaternion.identity);
-                
+
                 newAgent.name = $"{teamColor}Agent_{i}";
                 newAgent.GetComponent<TeamAgent>().SetTeamColor(teamColor);
-                
-                // Set home base/territory.
+
                 if (newAgent.GetComponent<TeamAgent>().HomeBase == null)
                     newAgent.transform.Find("HomeBase").transform.position = spawnPos;
-                
+
                 RegisterAgent(newAgent.GetComponent<TeamAgent>());
-                
+
                 if (debugMode)
                     Debug.Log($"[GAME MANAGER] Spawned {teamColor} agent at {spawnPos}");
             }
         }
-        
+
         public void RegisterAgent(TeamAgent agent)
         {
             if (agent == null) return;
-            
+
             TeamColor team = agent.TeamColor;
-            
+
             if (!teamAgents.ContainsKey(team))
                 teamAgents[team] = new List<TeamAgent>();
-                
+
             if (!teamAgents[team].Contains(agent))
                 teamAgents[team].Add(agent);
         }
@@ -129,7 +149,7 @@ namespace _Main_Project_Files._Scripts
         public void RegisterTerritory(Territory territory)
         {
             if (territory == null) return;
-            
+
             TeamColor team = territory.OwnerTeam;
             teamTerritories[team] = territory;
         }
@@ -137,45 +157,38 @@ namespace _Main_Project_Files._Scripts
         public void RegisterFlag(Flag flag)
         {
             if (flag == null) return;
-            
+
             TeamColor team = flag.OwnerTeam;
             teamFlags[team] = flag;
         }
-        
+
         public void OnFlagCaptured(Flag flag, TeamColor newOwner)
         {
             TeamColor previousOwner = flag.OwnerTeam;
-            
-            // Remove from previous owner.
+
             if (teamFlags.ContainsKey(previousOwner) && teamFlags[previousOwner] == flag)
                 teamFlags[previousOwner] = null;
-                
-            // Add to new owner.
+
             teamFlags[newOwner] = flag;
             Debug.Log($"[GAME MANAGER] {newOwner} team captured {previousOwner} team's flag. L.");
         }
-        
+
         public void OnTerritoryChanged(Territory territory, TeamColor newOwner)
         {
             TeamColor previousOwner = territory.OwnerTeam;
-            
-            // Remove from previous owner.
+
             if (teamTerritories.ContainsKey(previousOwner) && teamTerritories[previousOwner] == territory)
                 teamTerritories[previousOwner] = null;
-                
-            // Add to new owner.
+
             teamTerritories[newOwner] = territory;
-            
-            // TODO: Could add victory condition checks here.
         }
-        
+
         public void OnAgentKilled(TeamAgent victim, TeamAgent killer)
         {
             if (victim == null) return;
-            
-            Debug.Log($"[GAME MANAGER] {victim.gameObject.name} ({victim.TeamColor}) was killed by {killer?.gameObject.name} ({killer?.TeamColor})!");
-            
-            // Respawn is handled by the agent itself.
+
+            Debug.Log(
+                $"[GAME MANAGER] {victim.gameObject.name} ({victim.TeamColor}) was killed by {killer?.gameObject.name} ({killer?.TeamColor})!");
         }
 
         private int CountAllAgents()
@@ -223,9 +236,9 @@ namespace _Main_Project_Files._Scripts
         {
             if (teamFlags.TryGetValue(team, out Flag flag))
                 return flag;
-                
+
             return null;
         }
-        
+
     }
 }

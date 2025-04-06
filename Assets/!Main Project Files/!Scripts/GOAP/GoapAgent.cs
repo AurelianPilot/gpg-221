@@ -6,6 +6,7 @@ using NUnit.Framework.Internal.Execution;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Analytics;
+using Random = UnityEngine.Random;
 
 namespace _Main_Project_Files._Scripts.GOAP
 {
@@ -56,6 +57,7 @@ namespace _Main_Project_Files._Scripts.GOAP
         private void Start()
         {
             StartCoroutine(PlanningRoutine());
+            StartCoroutine(RandomGoalSelection());
         }
 
         private void OnDisable()
@@ -146,6 +148,25 @@ namespace _Main_Project_Files._Scripts.GOAP
                     }
                 }
                 yield return new WaitForSeconds(planningInterval);
+            }
+        }
+
+        private IEnumerator RandomGoalSelection()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(Random.Range(10f, 30f));
+                
+                string[] possibleGoals = {"IsPatrolling", "FlagCaptured", "TerritoryExpanded", "EnemyEliminated"};
+                string randomGoal = possibleGoals[Random.Range(0, possibleGoals.Length)];
+                
+                Debug.Log($"[GOAP SYS] {agentName} changing goal to {randomGoal}");
+                SetGoal(randomGoal, true);
+                
+                if (!isExecutingPlan)
+                {
+                    AbortPlan();
+                }
             }
         }
 

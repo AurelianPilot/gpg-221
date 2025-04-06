@@ -243,5 +243,25 @@ namespace _Main_Project_Files._Scripts.Agents
             return currentState;
         }
         
+        private void OnTriggerEnter(Collider other)
+        {
+            if (isDead) return;
+            
+            TeamAgent enemyAgent = other.GetComponentInParent<TeamAgent>();
+            if (enemyAgent != null && enemyAgent.TeamColor != teamColor)
+            {
+                Debug.Log($"[TEAM AGENT] {gameObject.name} detected enemy {enemyAgent.gameObject.name}");
+                OnSeeEnemy(enemyAgent);
+                return;
+            }
+            
+            Flag flag = other.GetComponentInParent<Flag>();
+            if (flag != null && flag.OwnerTeam != teamColor)
+            {
+                Debug.Log($"[TEAM AGENT] {gameObject.name} detected flag");
+                OnSeeFlag(flag);
+                return;
+            }
+        }
     }
 }

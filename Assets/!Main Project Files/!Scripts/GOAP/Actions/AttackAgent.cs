@@ -13,7 +13,7 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         [SerializeField] private float attackCooldown = 1f;
         [SerializeField] private string enemyEliminatedStateName = "EnemyEliminated";
         [SerializeField] private LayerMask agentLayer;
-        [SerializeField] private float detectionRadius = 10f;
+        [SerializeField] private float detectionRadius = 20f;
         
         [SerializeField] private GameObject attackEffectPrefab;
         [SerializeField] private float effectDuration = 0.5f;

@@ -10,23 +10,18 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         [Header("- Capture Settings")]
         [SerializeField] private float captureRange = 1.5f;
         [SerializeField] private string flagCapturedStateName = "FlagCaptured";
-        
-        private Flag targetFlag;
-        private TeamAgent teamAgent;
-        private GameManager gameManager;
 
-        private void Awake()
+        private Flag targetFlag;
+
+        protected override void Awake()
         {
             actionName = "CaptureFlag";
             isActionAchivable = true;
-            
-            // Initialize prerequisites.
             if (preRequisites.Count == 0)
             {
                 AddPreRequisite("IsDead", false);
+                AddPreRequisite("DefendingTeamDefeated", true);
             }
-            
-            // Initialize effects.
             if (effects.Count == 0)
             {
                 AddEffect(flagCapturedStateName, true);
@@ -38,64 +33,42 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         protected override IEnumerator PerformAction()
         {
             Debug.Log($"[ACTION] CaptureFlag.cs: {gameObject.name} is trying to capture a flag.");
-            
-            // Find the closest enemy flag.
             targetFlag = FindClosestEnemyFlag();
-            
             if (targetFlag == null)
             {
                 Debug.LogWarning("[ACTION] CaptureFlag.cs: No enemy flag found to capture.");
                 yield break;
             }
-            
-            // Move to the position of the glad.
             Vector3 flagPosition = targetFlag.transform.position;
             Agent pathfindingAgent = teamAgent?.GetPathfindingAgent();
-            
             if (pathfindingAgent == null)
             {
                 Debug.LogError("[ACTION] CaptureFlag.cs: No pathfinding agent found.");
                 yield break;
             }
-            
-            // Set agent state.
             teamAgent.SetAgentState(AgentState.CapturingFlag);
-            
-            // Move to flag.
             Debug.Log($"[ACTION] CaptureFlag.cs: Moving to flag at {flagPosition}.");
             pathfindingAgent.FollowPath(flagPosition);
-            
-            // Wait until close enough to the flag or max iterations reached.
-            int maxIterations = 300; // THIS IS TO PREVENT AN INFINITE LOOP (kinda like a timeout exception).
+            int maxIterations = 300;
             int currentIteration = 0;
-            
             while (currentIteration < maxIterations)
             {
-                // Check if agent is close enough to the flag.
                 float distanceToFlag = Vector3.Distance(transform.position, flagPosition);
-                
                 if (distanceToFlag <= captureRange)
                 {
                     Debug.Log($"[ACTION] CaptureFlag.cs: Reached flag position, distance: {distanceToFlag}");
                     break;
                 }
-                
-                // Check if flag ownership changed while it was moving.
                 if (targetFlag.OwnerTeam == teamAgent.TeamColor)
                 {
                     Debug.Log("[ACTION] CaptureFlag.cs: Flag is already owned by our team, aborting capture.");
                     yield break;
                 }
-                
                 currentIteration++;
                 yield return null;
             }
-            
-            // Wait for the flag capture process (this is handled by the Flag script).
             Debug.Log("[ACTION] CaptureFlag.cs: Waiting at flag position for capture...");
-            
-            yield return new WaitForSeconds(3.5f); // Wait slightly longer than the flag's capture time (QOL).
-            
+            yield return new WaitForSeconds(3.5f);
             Debug.Log("[ACTION] CaptureFlag.cs: Flag capture action completed.");
             teamAgent.SetAgentState(AgentState.Patrolling);
         }
@@ -103,14 +76,11 @@ namespace _Main_Project_Files._Scripts.GOAP.Actions
         private Flag FindClosestEnemyFlag()
         {
             if (teamAgent == null || gameManager == null) return null;
-            
             Flag closestFlag = null;
             float closestDistance = float.MaxValue;
-            
             foreach (TeamColor color in System.Enum.GetValues(typeof(TeamColor)))
             {
                 if (color == teamAgent.TeamColor) continue;
-                
                 Flag flag = gameManager.GetTeamFlag(color);
                 if (flag != null)
                 {

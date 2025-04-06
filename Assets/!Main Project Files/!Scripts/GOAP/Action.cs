@@ -40,7 +40,6 @@ namespace _Main_Project_Files._Scripts.GOAP
 
         protected virtual void Awake()
         {
-            // These lines were added to cache references one time only.
             teamAgent = GetComponent<_Main_Project_Files._Scripts.Agents.TeamAgent>();
             gameManager = FindObjectOfType<GameManager>();
         }

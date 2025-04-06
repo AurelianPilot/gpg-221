@@ -37,15 +37,13 @@ namespace _Main_Project_Files._Scripts
                 teamTerritories[color] = null;
                 teamFlags[color] = null;
             }
-
             if (gridManager == null)
                 gridManager = FindObjectOfType<GridManager>();
         }
 
         private void Start()
         {
-            if (autoStartSimulation)
-                StartSimulation();
+            if (autoStartSimulation) StartSimulation();
         }
 
         private void Update()
@@ -54,7 +52,6 @@ namespace _Main_Project_Files._Scripts
             {
                 TeamColor randomTeam = (TeamColor)Random.Range(0, 4);
                 List<TeamAgent> agents = GetTeamAgents(randomTeam);
-
                 if (agents.Count > 0)
                 {
                     int randomAgentIndex = Random.Range(0, agents.Count);
@@ -74,19 +71,14 @@ namespace _Main_Project_Files._Scripts
         public void StartSimulation()
         {
             if (simulationRunning) return;
-
             Debug.Log("[GAME MANAGER] Starting capture the flag simulation!");
-
-            if (CountAllAgents() == 0)
-                SpawnTeams();
-
+            if (CountAllAgents() == 0) SpawnTeams();
             simulationRunning = true;
         }
 
         public void StopSimulation()
         {
             if (!simulationRunning) return;
-
             Debug.Log("[GAME MANAGER] Stopping simulation!!!!!!!!!!!!!!!!!!!!!!!!!!! RAAAAAAAAAAAAAAAAAAAH");
             simulationRunning = false;
         }
@@ -106,28 +98,21 @@ namespace _Main_Project_Files._Scripts
                 Debug.LogError("[GAME MANAGER] Cannot spawn teams: Agent prefab is not set!");
                 return;
             }
-
             if (spawnPoints == null || spawnPoints.Length == 0)
             {
                 Debug.LogWarning($"[GAME MANAGER] No spawn points set for {teamColor} team!");
                 return;
             }
-
             int spawnCount = Mathf.Min(agentsPerTeam, spawnPoints.Length);
-
             for (int i = 0; i < spawnCount; i++)
             {
                 Vector3 spawnPos = spawnPoints[i].position;
                 GameObject newAgent = Instantiate(agentPrefab, spawnPos, Quaternion.identity);
-
                 newAgent.name = $"{teamColor}Agent_{i}";
                 newAgent.GetComponent<TeamAgent>().SetTeamColor(teamColor);
-
                 if (newAgent.GetComponent<TeamAgent>().HomeBase == null)
                     newAgent.transform.Find("HomeBase").transform.position = spawnPos;
-
                 RegisterAgent(newAgent.GetComponent<TeamAgent>());
-
                 if (debugMode)
                     Debug.Log($"[GAME MANAGER] Spawned {teamColor} agent at {spawnPos}");
             }
@@ -136,20 +121,22 @@ namespace _Main_Project_Files._Scripts
         public void RegisterAgent(TeamAgent agent)
         {
             if (agent == null) return;
-
             TeamColor team = agent.TeamColor;
+            if (!teamAgents.ContainsKey(team)) teamAgents[team] = new List<TeamAgent>();
+            if (!teamAgents[team].Contains(agent)) teamAgents[team].Add(agent);
+        }
 
-            if (!teamAgents.ContainsKey(team))
-                teamAgents[team] = new List<TeamAgent>();
-
-            if (!teamAgents[team].Contains(agent))
-                teamAgents[team].Add(agent);
+        public void RemoveAgent(TeamAgent agent)
+        {
+            if (agent == null) return;
+            TeamColor team = agent.TeamColor;
+            if (!teamAgents.ContainsKey(team)) return;
+            teamAgents[team].Remove(agent);
         }
 
         public void RegisterTerritory(Territory territory)
         {
             if (territory == null) return;
-
             TeamColor team = territory.OwnerTeam;
             teamTerritories[team] = territory;
         }
@@ -157,7 +144,6 @@ namespace _Main_Project_Files._Scripts
         public void RegisterFlag(Flag flag)
         {
             if (flag == null) return;
-
             TeamColor team = flag.OwnerTeam;
             teamFlags[team] = flag;
         }
@@ -165,10 +151,8 @@ namespace _Main_Project_Files._Scripts
         public void OnFlagCaptured(Flag flag, TeamColor newOwner)
         {
             TeamColor previousOwner = flag.OwnerTeam;
-
             if (teamFlags.ContainsKey(previousOwner) && teamFlags[previousOwner] == flag)
                 teamFlags[previousOwner] = null;
-
             teamFlags[newOwner] = flag;
             Debug.Log($"[GAME MANAGER] {newOwner} team captured {previousOwner} team's flag. L.");
         }
@@ -176,69 +160,81 @@ namespace _Main_Project_Files._Scripts
         public void OnTerritoryChanged(Territory territory, TeamColor newOwner)
         {
             TeamColor previousOwner = territory.OwnerTeam;
-
             if (teamTerritories.ContainsKey(previousOwner) && teamTerritories[previousOwner] == territory)
                 teamTerritories[previousOwner] = null;
-
             teamTerritories[newOwner] = territory;
         }
 
         public void OnAgentKilled(TeamAgent victim, TeamAgent killer)
         {
             if (victim == null) return;
+            Debug.Log($"[GAME MANAGER] {victim.gameObject.name} ({victim.TeamColor}) was killed by {killer?.gameObject.name} ({killer?.TeamColor})!");
+            RemoveAgent(victim);
+            if (OnlyOneTeamRemains())
+            {
+                TeamColor survivingTeam = GetSurvivingTeam();
+                CaptureAllFlagsForTeam(survivingTeam);
+            }
+        }
 
-            Debug.Log(
-                $"[GAME MANAGER] {victim.gameObject.name} ({victim.TeamColor}) was killed by {killer?.gameObject.name} ({killer?.TeamColor})!");
+        private bool OnlyOneTeamRemains()
+        {
+            int teamsWithAgents = 0;
+            foreach (var kvp in teamAgents)
+            {
+                if (kvp.Value.Count > 0) teamsWithAgents++;
+            }
+            return (teamsWithAgents == 1);
+        }
+
+        private TeamColor GetSurvivingTeam()
+        {
+            foreach (var kvp in teamAgents)
+            {
+                if (kvp.Value.Count > 0) return kvp.Key;
+            }
+            return TeamColor.Red;
+        }
+
+        private void CaptureAllFlagsForTeam(TeamColor winner)
+        {
+            foreach (var kvp in teamFlags)
+            {
+                Flag f = kvp.Value;
+                if (f == null) continue;
+                if (f.OwnerTeam != winner)
+                {
+                    f.SetOwner(winner);
+                }
+            }
         }
 
         private int CountAllAgents()
         {
             int count = 0;
-            foreach (var team in teamAgents.Values)
-            {
-                count += team.Count;
-            }
+            foreach (var team in teamAgents.Values) count += team.Count;
             return count;
         }
-        
-        /// <summary>
-        /// Returns all agents of a specific team.
-        /// </summary>
-        /// <param name="team">Team.</param>
-        /// <returns></returns>
+
         public List<TeamAgent> GetTeamAgents(TeamColor team)
         {
             if (teamAgents.TryGetValue(team, out List<TeamAgent> agents))
                 return new List<TeamAgent>(agents);
-                
             return new List<TeamAgent>();
         }
 
-        /// <summary>
-        /// Returns the territory for a team.
-        /// </summary>
-        /// <param name="team">Team.</param>
-        /// <returns></returns>
         public Territory GetTeamTerritory(TeamColor team)
         {
             if (teamTerritories.TryGetValue(team, out Territory territory))
                 return territory;
-                
             return null;
         }
 
-        /// <summary>
-        /// Returns the flag for a team.
-        /// </summary>
-        /// <param name="team">Team.</param>
-        /// <returns></returns>
         public Flag GetTeamFlag(TeamColor team)
         {
             if (teamFlags.TryGetValue(team, out Flag flag))
                 return flag;
-
             return null;
         }
-
     }
 }

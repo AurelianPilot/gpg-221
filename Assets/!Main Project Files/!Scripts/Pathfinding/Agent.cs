@@ -14,7 +14,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         [SerializeField] private float moveSpeed = 5f;
         [SerializeField] private float rotationSpeed = 100f;
         [SerializeField] private float waypointReachedDistance = 0.1f;
-        [SerializeField] private float pathfindingTimeout = 2f;
         [SerializeField] private bool logging = true;
     
         [Header("- References")]
@@ -23,7 +22,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         private List<Node> currentPath;
         private int currentWaypointIndex;
         private bool isFollowingPath;
-        private bool isPathFindingInProgress;
         private Vector3 targetPosition;
     
         private Coroutine followPathCoroutine;
@@ -77,8 +75,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         #region Private Methods
         private IEnumerator WaitForPathAndFollow()
         {
-            isPathFindingInProgress = true;
-    
             // CHANGED: Get path directly from FindPath call
             Vector3 startPosition = transform.position;
             Debug.Log($"Agent.cs: Finding path from {startPosition} to {targetPosition}");
@@ -86,7 +82,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             // Call FindPath and store the result directly
             currentPath = astar.FindPath(startPosition, targetPosition);
     
-            isPathFindingInProgress = false;
 
             if (currentPath != null && currentPath.Count > 0)
             {

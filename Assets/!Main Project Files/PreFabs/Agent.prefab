@@ -190,7 +190,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
@@ -224,6 +224,8 @@ MonoBehaviour:
   actionExecutionCooldown: 0.5
   activeGoalState: 
   activeGoalValue: 1
+  minGoalChangeSeconds: 2
+  maxGoalChangeSeconds: 5
   debugMode: 1
 --- !u!114 &-4860785210063858446
 MonoBehaviour:
@@ -298,6 +300,8 @@ MonoBehaviour:
   actionExecutionCooldown: 0.5
   activeGoalState: 
   activeGoalValue: 1
+  minGoalChangeSeconds: 2
+  maxGoalChangeSeconds: 5
   debugMode: 1
   teamColor: 0
   respawnTime: 5

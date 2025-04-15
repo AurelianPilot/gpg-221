@@ -75,11 +75,9 @@ namespace _Main_Project_Files._Scripts.Pathfinding
         #region Private Methods
         private IEnumerator WaitForPathAndFollow()
         {
-            // CHANGED: Get path directly from FindPath call
             Vector3 startPosition = transform.position;
             Debug.Log($"Agent.cs: Finding path from {startPosition} to {targetPosition}");
     
-            // Call FindPath and store the result directly
             currentPath = astar.FindPath(startPosition, targetPosition);
     
 
@@ -99,7 +97,6 @@ namespace _Main_Project_Files._Scripts.Pathfinding
             else
             {
                 Debug.LogWarning($"Agent.cs: No path found or pathfinding timed out when trying to reach {targetPosition}");
-                // Add direct movement fallback
                 StartCoroutine(DirectMovementFallback());
             }
 

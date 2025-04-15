@@ -1,9 +1,9 @@
-using _Main_Project_Files._Scripts.GOAP;
-using _Main_Project_Files._Scripts.GOAP.Actions;
-using _Main_Project_Files._Scripts.Pathfinding;
+using _Main_Project_Files.Leo._Scripts.GOAP;
+using _Main_Project_Files.Leo._Scripts.GOAP.Actions;
+using _Main_Project_Files.Leo._Scripts.Pathfinding;
 using UnityEngine;
 
-namespace _Main_Project_Files._Scripts.Agents
+namespace _Main_Project_Files.Leo._Scripts.Agents
 {
     public enum TeamColor
     {

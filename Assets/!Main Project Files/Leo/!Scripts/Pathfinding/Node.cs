@@ -1,10 +1,8 @@
 using System;
-using System.Net.Cache;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace _Main_Project_Files._Scripts.Pathfinding
+namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 {
     /// <summary>
     /// This is a single node in the pathfinding grid, stores data and handles debug visuals.

@@ -1,51 +1,52 @@
-// Create a new script called AgentDebugUI.cs
+using _Main_Project_Files.Leo._Scripts.Agents;
+using _Main_Project_Files.Leo._Scripts.GOAP;
+using _Main_Project_Files.Leo._Scripts.Pathfinding;
 using UnityEngine;
 using UnityEngine.UI;
-using _Main_Project_Files._Scripts.Agents;
-using _Main_Project_Files._Scripts.Pathfinding;
-using _Main_Project_Files._Scripts.GOAP;
 
-public class AgentDebugUI : MonoBehaviour
+namespace _Main_Project_Files.Leo._Scripts
 {
-    [SerializeField] private Text stateText;
-    [SerializeField] private Text pathText;
-    [SerializeField] private Text actionText;
-    [SerializeField] private Text errorText;
-    
-    private TeamAgent teamAgent;
-    private Agent pathAgent;
-    private GoapAgent goapAgent;
-    
-    void Start()
+    public class AgentDebugUI : MonoBehaviour
     {
-        teamAgent = GetComponentInParent<TeamAgent>();
-        pathAgent = GetComponentInParent<Agent>();
-        goapAgent = GetComponentInParent<GoapAgent>();
-        
-        // Face canvas toward camera
-        Transform mainCamera = Camera.main.transform;
-        transform.LookAt(transform.position + mainCamera.rotation * Vector3.forward,
-            mainCamera.rotation * Vector3.up);
-    }
+        [SerializeField] private Text stateText;
+        [SerializeField] private Text pathText;
+        [SerializeField] private Text actionText;
+        [SerializeField] private Text errorText;
     
-    void Update()
-    {
-        if (teamAgent != null)
-            stateText.text = $"State: {teamAgent.GetAgentState()}";
-            
-        if (pathAgent != null)
+        private TeamAgent teamAgent;
+        private Agent pathAgent;
+        private GoapAgent goapAgent;
+    
+        void Start()
         {
-            string pathStatus = pathAgent.IsFollowingPath() ? "Following" : "Idle";
-            Vector3 target = pathAgent.GetTargetPosition();
-            pathText.text = $"Path: {pathStatus}\nTarget: {target.ToString("F1")}";
-            
-            if (pathAgent.GetAstar() == null)
-                errorText.text = "ERROR: No Astar ref!";
+            teamAgent = GetComponentInParent<TeamAgent>();
+            pathAgent = GetComponentInParent<Agent>();
+            goapAgent = GetComponentInParent<GoapAgent>();
+        
+            Transform mainCamera = Camera.main.transform;
+            transform.LookAt(transform.position + mainCamera.rotation * Vector3.forward,
+                mainCamera.rotation * Vector3.up);
         }
-        
-        if (goapAgent != null)
+    
+        void Update()
         {
-            actionText.text = $"Goal: {goapAgent.ActiveGoalState}";
+            if (teamAgent != null)
+                stateText.text = $"State: {teamAgent.GetAgentState()}";
+            
+            if (pathAgent != null)
+            {
+                string pathStatus = pathAgent.IsFollowingPath() ? "Following" : "Idle";
+                Vector3 target = pathAgent.GetTargetPosition();
+                pathText.text = $"Path: {pathStatus}\nTarget: {target.ToString("F1")}";
+            
+                if (pathAgent.GetAstar() == null)
+                    errorText.text = "ERROR: No Astar ref!";
+            }
+        
+            if (goapAgent != null)
+            {
+                actionText.text = $"Goal: {goapAgent.ActiveGoalState}";
+            }
         }
     }
 }

@@ -1,9 +1,10 @@
 using System.Collections;
-using _Main_Project_Files._Scripts.Agents;
-using _Main_Project_Files._Scripts.Pathfinding;
+using _Main_Project_Files._Scripts;
+using _Main_Project_Files.Leo._Scripts.Agents;
+using _Main_Project_Files.Leo._Scripts.Pathfinding;
 using UnityEngine;
 
-namespace _Main_Project_Files._Scripts
+namespace _Main_Project_Files.Leo._Scripts
 {
     public class Flag : MonoBehaviour
     {

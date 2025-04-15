@@ -1,11 +1,7 @@
-using System;
-using NUnit.Framework.Internal.Execution;
 using Unity.Mathematics;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 
-namespace _Main_Project_Files._Scripts.Pathfinding
+namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 {
     /// <summary>
     /// Manages the grid of nodes used for pathfinding. Creates the grid with nodes inside.

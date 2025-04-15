@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using _Main_Project_Files._Scripts.Pathfinding;
+using _Main_Project_Files.Leo._Scripts.Pathfinding;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace _Main_Project_Files._Scripts.GOAP.Actions
+namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
 {
     public class Patrol : Action
     {

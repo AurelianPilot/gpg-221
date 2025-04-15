@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Action = _Main_Project_Files.Leo._Scripts.GOAP.Action;
 
-namespace _Main_Project_Files._Scripts.GOAP
+namespace _Main_Project_Files.Leo._Scripts.GOAP
 {
     public class Planning : MonoBehaviour
     {

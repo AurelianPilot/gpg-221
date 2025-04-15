@@ -1,10 +1,11 @@
-using UnityEngine;
-
-public enum NodeState
+namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 {
-    Default,
-    Open,
-    Closed,
-    Path,
-    Unwalkable
+    public enum NodeState
+    {
+        Default,
+        Open,
+        Closed,
+        Path,
+        Unwalkable
+    }
 }

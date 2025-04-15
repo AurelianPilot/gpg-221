@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using _Main_Project_Files._Scripts.GOAP;
 using UnityEngine;
 
-namespace _Main_Project_Files._Scripts.GOAP
+namespace _Main_Project_Files.Leo._Scripts.GOAP
 {
     public class Planner
     {

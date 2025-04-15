@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using _Main_Project_Files.Leo._Scripts.Agents;
+using _Main_Project_Files.Leo._Scripts.Pathfinding;
 using UnityEngine;
-using _Main_Project_Files._Scripts.Pathfinding;
 
-namespace _Main_Project_Files._Scripts.GOAP
+namespace _Main_Project_Files.Leo._Scripts.GOAP
 {
     /// <summary>
     /// An action that is performed by AI (as in, an agent).
@@ -28,7 +29,7 @@ namespace _Main_Project_Files._Scripts.GOAP
 
         protected GoapAgent owner;
         protected bool isRunning = false;
-        protected _Main_Project_Files._Scripts.Agents.TeamAgent teamAgent;
+        protected TeamAgent teamAgent;
         protected GameManager gameManager;
 
         public string ActionName => actionName;
@@ -40,7 +41,7 @@ namespace _Main_Project_Files._Scripts.GOAP
 
         protected virtual void Awake()
         {
-            teamAgent = GetComponent<_Main_Project_Files._Scripts.Agents.TeamAgent>();
+            teamAgent = GetComponent<TeamAgent>();
             gameManager = FindObjectOfType<GameManager>();
         }
 

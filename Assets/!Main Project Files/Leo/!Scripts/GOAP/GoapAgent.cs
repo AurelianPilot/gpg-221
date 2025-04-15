@@ -1,15 +1,11 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Net.NetworkInformation;
-using _Main_Project_Files._Scripts.Pathfinding;
-using NUnit.Framework.Internal.Execution;
-using Unity.VisualScripting;
+using _Main_Project_Files.Leo._Scripts.Pathfinding;
 using UnityEngine;
-using UnityEngine.Analytics;
+using Action = _Main_Project_Files.Leo._Scripts.GOAP.Action;
 using Random = UnityEngine.Random;
 
-namespace _Main_Project_Files._Scripts.GOAP
+namespace _Main_Project_Files.Leo._Scripts.GOAP
 {
     public class GoapAgent : MonoBehaviour
     {

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Vector3 = UnityEngine.Vector3;
 
-namespace _Main_Project_Files._Scripts.Pathfinding
+namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 {
     /// <summary>
     /// Implements the Astar pathfinding algorithm to find the shortest path between two points in the grid.

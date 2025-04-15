@@ -1,9 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Rendering;
 using UnityEngine;
 
-namespace _Main_Project_Files._Scripts.Pathfinding
+namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 {
     public class Agent : MonoBehaviour
     {

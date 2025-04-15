@@ -1,12 +1,8 @@
-using System;
-using _Main_Project_Files._Scripts.GOAP.Actions;
-using _Main_Project_Files._Scripts.Pathfinding;
-using NUnit.Framework.Constraints;
-using TMPro;
-using Unity.VisualScripting;
+using _Main_Project_Files.Leo._Scripts.GOAP.Actions;
+using _Main_Project_Files.Leo._Scripts.Pathfinding;
 using UnityEngine;
 
-namespace _Main_Project_Files._Scripts.GOAP
+namespace _Main_Project_Files.Leo._Scripts.GOAP
 {
     public class PatrolAgentInitializer : MonoBehaviour
     {

@@ -1,8 +1,4 @@
-using System;
-using _Main_Project_Files._Scripts.Pathfinding;
-using UnityEngine;
-
-namespace _Main_Project_Files._Scripts.GOAP
+namespace _Main_Project_Files.Leo._Scripts.GOAP
 {
     public class PreRequisite
     {

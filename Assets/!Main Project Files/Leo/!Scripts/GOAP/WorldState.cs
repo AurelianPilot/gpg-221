@@ -7,6 +7,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
     {
         private readonly Dictionary<string, bool> states = new Dictionary<string, bool>();
         
+        // Add or update a state.
         public void SetState(string key, bool value)
         {
             if (states.ContainsKey(key))
@@ -30,7 +31,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         }
         
         /// <summary>
-        /// Returns a copy of the states dictionary.
+        /// Returns a copy of the states' dictionary.
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, bool> GetStates()

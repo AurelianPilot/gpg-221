@@ -13,7 +13,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
     {
         [SerializeField] protected string actionName = "Unnamed Action";
         [SerializeField] protected float actionCost = 1f;
-        [SerializeField] protected bool isActionAchivable = false;
+        [SerializeField] protected bool isActionAchivable;
 
         /// <summary>
         /// Effect caused by this action being performed.
@@ -34,10 +34,8 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
         public string ActionName => actionName;
         public float ActionCost => actionCost;
-        public bool IsActionAchivable => isActionAchivable;
         public List<PreRequisite> PreRequisites => preRequisites;
         public List<Effect> Effects => effects;
-        public bool IsRunning => isRunning;
 
         protected virtual void Awake()
         {
@@ -50,7 +48,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
             owner = agent;
         }
 
-        /// <summary>
+        /*/// <summary>
         ///  Checks the world state lists if the preRequisites are met to perform an action.
         /// </summary>
         /// <param name="worldState">Reference to the world state.</param>
@@ -64,7 +62,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
                 if (!preRequisite.IsSatisfied(worldState)) return false;
             }
             return true;
-        }
+        }*/
 
         /// <summary>
         /// Apply all effects to the world state.
@@ -78,7 +76,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
             }
         }
 
-        public virtual IEnumerator Execute()
+        public IEnumerator Execute()
         {
             isRunning = true;
             yield return PerformAction();
@@ -101,10 +99,10 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
             return GetComponent<Agent>() ?? owner?.GetPathfindingAgent();
         }
 
-        protected void Log(string message)
+        /*protected void Log(string message)
         {
             if (debug) Debug.Log(message);
-        }
+        }*/
     }
 }
  

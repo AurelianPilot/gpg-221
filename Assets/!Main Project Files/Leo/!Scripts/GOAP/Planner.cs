@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using _Main_Project_Files._Scripts.GOAP;
 using UnityEngine;
 
 namespace _Main_Project_Files.Leo._Scripts.GOAP
@@ -8,10 +7,10 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
     {
         private class PlanNode
         {
-            public Action Action { get; set; }
-            public PlanNode Parent { get; set; }
-            public float RunningCost { get; set; }
-            public Dictionary<string, bool> State { get; private set; }
+            public Action Action { get; }
+            public PlanNode Parent { get; }
+            public float RunningCost { get; }
+            public Dictionary<string, bool> State { get; }
 
             public PlanNode(Action action, PlanNode parent, Dictionary<string, bool> state, float runningCost)
             {

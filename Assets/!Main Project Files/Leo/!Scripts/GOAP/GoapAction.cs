@@ -25,18 +25,34 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
             if (agentWorldState == null) {
                 Debug.LogError($"GoapAction.cs: ({gameObject.name}: No AgentWorldState component referenced.");
                 
-                // TODO: Call setup methods here later.
+                SetUpPreRequisites();
+                SetUpEffects();
             }
         }
 
         #region Abstract Methods (that should be implemented by actions inheriting from this).
 
+        /// <summary>
+        /// Actions MUST implement this to define their prerequisites using the method AddPrerequisite(key, value).
+        /// </summary>
         protected abstract void SetUpPreRequisites();
         
+        /// <summary>
+        /// Actions should also define their effects using the method AddEffect(key, value).
+        /// </summary>
         protected abstract void SetUpEffects();
         
+        /// <summary>
+        /// The core logic of the action (what the agent actually does). 
+        /// </summary>
+        /// <returns>True if the action was successfully done, false if failed.</returns>
         protected abstract IEnumerator PerformAction();
 
+        /// <summary>
+        /// This is to check for conditions that must be true right before the action executes,
+        /// but might be too dynamic/complex to be part of the static WorldState.
+        /// </summary>
+        /// <returns>True if the conditions are met, false if not.</returns>
         public abstract bool CheckProceduralPreconditions();
         
         #endregion

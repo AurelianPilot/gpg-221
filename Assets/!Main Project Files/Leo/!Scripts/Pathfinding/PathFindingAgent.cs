@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 {
-    public class Agent : MonoBehaviour
+    public class PathFindingAgent : MonoBehaviour
     {
         /// <summary>
         /// Controls the movement of an agent in a path calculated by the Astar algorithm.

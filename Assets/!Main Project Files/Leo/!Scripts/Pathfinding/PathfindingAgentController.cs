@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 {
-    public class AgentController : MonoBehaviour
+    public class PathfindingAgentController : MonoBehaviour
     {
         [Header("- Agent Settings")]
         [SerializeField] private GameObject agentPrefab;
@@ -18,7 +18,7 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
         [SerializeField] private Astar astar;
 
         private GameObject agentInstance;
-        private Agent agentComponent;
+        private PathFindingAgent pathFindingAgentComponent;
         private Camera mainCamera;
 
         private void Start()
@@ -44,11 +44,11 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
                 agentInstance = Instantiate(agentPrefab, spawnPosition, Quaternion.identity);
                 agentInstance.name = "Astar following agent";
                 
-                agentComponent = agentInstance.GetComponent<Agent>();
+                pathFindingAgentComponent = agentInstance.GetComponent<PathFindingAgent>();
                 // Dummy proofing.
-                if (agentComponent == null)
+                if (pathFindingAgentComponent == null)
                 {
-                    agentComponent = agentInstance.AddComponent<Agent>();
+                    pathFindingAgentComponent = agentInstance.AddComponent<PathFindingAgent>();
                 }
             }
             else
@@ -59,7 +59,7 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0) && agentComponent != null)
+            if (Input.GetMouseButtonDown(0) && pathFindingAgentComponent != null)
             {
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -69,7 +69,7 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
                     Node targetNode = hit.collider.GetComponent<Node>();
                     if (targetNode != null && targetNode.Walkable)
                     {
-                        agentComponent.FollowPath(targetNode.Position);
+                        pathFindingAgentComponent.FollowPath(targetNode.Position);
                     }
                 }
             }

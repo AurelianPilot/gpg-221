@@ -9,23 +9,21 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
     /// This script MUST be in the Agent that can perform the action.
     /// </summary>
     [RequireComponent(typeof(PathFindingAgent))]
-    public abstract class WanderAction : GoapAction
+    public sealed class WanderAction : GoapAction
     {
-        [Header("Wander Settings")]
-        [SerializeField] private float wanderRadius = 10f; // How far away to pick a target node
-
+        [Header("- Wander Settings")]
+        [SerializeField] private float wanderRadius = 10f;
         [SerializeField] private float minWaitTime = 1f;
         [SerializeField] private float maxWaitTime = 3f;
-        [SerializeField] private float arrivalDistance = 0.5f; // How close to the target counts as "arrived"
+        [Tooltip("How close to the target counts as arrived.")]
+        [SerializeField] private float arrivalDistance = 0.5f;
 
-        // *** CHANGED: Reference your custom pathfinding Agent ***
         private PathFindingAgent pathfindingAgent;
-        private GridManager gridManager; // Need this to find valid nodes
-
-        private bool actionIsRunning = false;
+        private GridManager gridManager;
+        private bool actionIsRunning;
         private Vector3 currentWanderTarget = Vector3.zero;
 
-        protected virtual void Awake() {
+        protected override void Awake() {
             base.Awake();
 
             pathfindingAgent = GetComponent<PathFindingAgent>();
@@ -33,7 +31,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                 Debug.LogError($"WanderAction.cs: ({gameObject.name}): Agent component not found!");
             }
 
-            // The Astar component should also be in the inspector.
+            // The Aster component should also be in the inspector.
             if (pathfindingAgent != null && pathfindingAgent.astar == null) {
                 Debug.LogError($"WanderAction.cs: ({gameObject.name}): The Agent component's Astar reference is NOT set!");
             }
@@ -57,7 +55,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         /// <summary>
         /// Checks if the action can run in this instant. (comes in handy when the action's requisites are dynamic).
         /// </summary>
-        private bool CheckProceduralPrecondition() {
+        public override bool CheckProceduralPreconditions() {
             // Can it pathfind? 
             return pathfindingAgent != null &&
                    // Astar and agent link exists?
@@ -69,8 +67,8 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         }
 
 
-        protected override IEnumerator PerformAction() {
-            if (!CheckProceduralPrecondition()) {
+        public override IEnumerator PerformAction() {
+            if (!CheckProceduralPreconditions()) {
                 Debug.LogWarning($"WanderAction.cs: Procedural precondition failed.");
                 yield break;
             }
@@ -140,7 +138,6 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
             // GoapAgent.cs will call ApplyEffectsToWorldState after this coroutine finishes.
         }
 
-
         /// <summary>
         /// Helper method to find a random Walkable Node using my own Astar (Leo) from project 1.
         /// </summary>
@@ -181,3 +178,18 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

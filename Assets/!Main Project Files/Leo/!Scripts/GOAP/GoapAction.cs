@@ -13,14 +13,14 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
     public abstract class GoapAction : MonoBehaviour
     {
         [Header("- Action Cost")]
-        [SerializeField] protected float cost = 1f; // I'm setting 1 as the default one.
+        [SerializeField] protected float cost = 1f; // I'm setting 1 as the default cost for everything.
         
         protected Dictionary<WorldStateKey, bool> preRequisites = new();
         protected Dictionary<WorldStateKey, bool> effects = new();
         
         protected AgentWorldState agentWorldState;
 
-        private void Awake() {
+        protected virtual void Awake() {
             agentWorldState = GetComponent<AgentWorldState>();
             if (agentWorldState == null) {
                 Debug.LogError($"GoapAction.cs: ({gameObject.name}: No AgentWorldState component referenced.");
@@ -36,7 +36,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// Actions MUST implement this to define their prerequisites using the method AddPrerequisite(key, value).
         /// </summary>
         protected abstract void SetUpPreRequisites();
-        
+
         /// <summary>
         /// Actions should also define their effects using the method AddEffect(key, value).
         /// </summary>

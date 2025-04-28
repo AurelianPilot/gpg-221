@@ -14,91 +14,86 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
     [RequireComponent(typeof(AgentWorldState))]
     public class GladiatorAgent : MonoBehaviour
     {
+        #region Variables
+
         [Header("- GOAP Core")]
         [SerializeField] private AgentWorldState agentWorldState;
 
         [SerializeField] private List<GoapAction> availableActions;
-        private GoapGoal currentGoal;
-
-        private GoapPlanner planner;
+        private GoapGoal _currentGoal;
+        private GoapPlanner _planner;
 
         [Header("- State")]
-        private Queue<GoapAction> currentPlan = new();
+        private Queue<GoapAction> _currentPlan = new();
 
-        private bool isExecutingPlan;
+        private bool _isExecutingPlan;
 
         [Header("- Debugging")]
-        [SerializeField] private bool logPlan = true;
+        [SerializeField] private bool logPlan;
 
-        [SerializeField] private bool logExecution = true;
+        [SerializeField] private bool logExecution;
 
-        #region MyRegion
+        #endregion
+
+        #region Unity Lifecycle
 
         private void Awake() {
+            InitializeComponents();
+        }
+
+        private void Start() {
+            // TODO: Replace this placeholder with a proper Goal definition.
+            SetInitialGoal();
+
+            // Start the main decision-making loop. If GOAP was a car engine this would start it lol.
+            StartCoroutine(RunGoapLoop());
+        }
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// Initialize required components and references.
+        /// </summary>
+        private void InitializeComponents() {
             if (agentWorldState == null) {
                 agentWorldState = GetComponent<AgentWorldState>();
             }
 
-            // Discover all GoapAction components attached to this GameObject.
+            // * This automatically populates the list with GoapActions by looking in the Gmae Object.
             availableActions = GetComponents<GoapAction>().ToList();
             Debug.Log($"Found {availableActions.Count} actions for {gameObject.name}");
 
-            planner = new GoapPlanner();        }
-
-        private void Start() {
-            // TODO: Replace this placeholder with a proper Goal definition
-            currentGoal = new GoapGoal("WanderGoal", WorldStateKey.IsWandering, true);
-
-            // Start the main decision-making loop
-            StartCoroutine(RunGoapLoop());
+            // Initialize the GOAP planner.
+            _planner = new GoapPlanner();
         }
 
         /// <summary>
-        /// The main Goap Loop happening for this agent.
+        /// Sets the initial goal for the agent.
         /// </summary>
-        /// <returns></returns>
+        private void SetInitialGoal() {
+            _currentGoal = new GoapGoal("WanderGoal", WorldStateKey.IsWandering, true);
+        }
+
+        #endregion
+
+        #region GOAP Core Logic
+
+        /// <summary>
+        /// The main GOAP decision loop for this agent.
+        /// 
+        /// Execution flow:
+        /// 1. Check if a plan is already being executed.
+        /// 2. If not, check if the current goal is already met.
+        /// 3. If the goal is not met, create a new plan.
+        /// 4. Execute the plan if one is found.
+        /// 5. Repeat.
+        /// </summary>
         private IEnumerator RunGoapLoop() {
             while (true) {
-                // If we are not currently busy executing a plan.
-                if (!isExecutingPlan) {
-                    // Check if the current goal is already met.
-                    if (IsGoalMet(currentGoal)) {
-                        if (logExecution)
-                            Debug.Log(
-                                $"GladiatorAgent.cs: Goal '{currentGoal.GoalName}' already met. Idling or finding new goal...");
-
-                        // TODO: Implement logic to find a new goal if current one is met.
-
-                        yield return
-                            new WaitForSeconds(
-                                1f); // Wait before checking again (maybe let's add a variable for idling time?).
-                        continue;
-                    }
-
-                    Debug.Log("GladiatorAgent.cs: Finding a plan...");
-
-                    // Get current state and goal for the planner.
-                    Dictionary<WorldStateKey, bool> currentState = agentWorldState.GetAllStates();
-                    Dictionary<WorldStateKey, bool>
-                        goalState = currentGoal.GetGoalState(); // Need to implement this in GoapGoal
-
-                    planner = new GoapPlanner();
-                    List<GoapAction> planList = planner.CreatePlan(this, availableActions, currentState, goalState);
-
-
-                    if (planList != null && planList.Count > 0) {
-                        // Plan found, store it and start execution.
-                        currentPlan = new Queue<GoapAction>(planList);
-                        if (logPlan) LogPlan(currentPlan);
-                        isExecutingPlan = true;
-                        StartCoroutine(ExecutePlan());
-                    }
-                    else {
-                        // No plan found.
-                        Debug.LogWarning(
-                            $"GladiatorAgent.cs: Could not find a plan to achieve goal '{currentGoal.GoalName}'. Waiting...");
-                        yield return new WaitForSeconds(1f);
-                    }
+                if (!_isExecutingPlan) {
+                    yield return StartCoroutine(HandleGoalProcessing());
                 }
 
                 yield return null;
@@ -106,40 +101,144 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         }
 
         /// <summary>
-        /// Executes the actions in the current plan queue.
+        /// Handles goal processing and planning when no plan is being executed.
         /// </summary>
-        /// <returns></returns>
+        private IEnumerator HandleGoalProcessing() {
+            // Check if the current goal is already met.
+            if (IsGoalMet(_currentGoal)) {
+                yield return StartCoroutine(HandleCompletedGoal());
+            }
+            else {
+                yield return StartCoroutine(CreateAndExecutePlan());
+            }
+        }
+
+        /// <summary>
+        /// Handles logic when a goal is already completed.
+        /// </summary>
+        private IEnumerator HandleCompletedGoal() {
+            if (logExecution) {
+                Debug.Log(
+                    $"GladiatorAgent.cs: Goal '{_currentGoal.GoalName}' already met. Idling or finding new goal...");
+            }
+
+            // TODO: Implement logic to find a new goal if current one is met.
+
+            // ! I currently commented this because I wanna add an "afterActionCompletedCooldown" in the main GoapAction.cs class,
+            // so each action has a cooldown before the next action can be executed.
+            // yield return new WaitForSeconds(1f);
+            yield return null;
+        }
+
+        /// <summary>
+        /// Creates a plan and executes it if valid.
+        /// </summary>
+        private IEnumerator CreateAndExecutePlan() {
+            Debug.Log("GladiatorAgent.cs: Finding a plan...");
+
+            // Create a new plan.
+            List<GoapAction> planList = GeneratePlan();
+
+            if (planList != null && planList.Count > 0) {
+                yield return StartCoroutine(InitiateAndExecutePlan(planList));
+            }
+            else {
+                // No plan found.
+                Debug.LogWarning(
+                    $"GladiatorAgent.cs: Could not find a plan to achieve goal '{_currentGoal.GoalName}'. Waiting...");
+                yield return new WaitForSeconds(1f);
+            }
+        }
+
+        /// <summary>
+        /// Generates a plan using the GOAP planner.
+        /// </summary>
+        private List<GoapAction> GeneratePlan() {
+            // Get current state and goal for the planner.
+            Dictionary<WorldStateKey, bool> currentState = agentWorldState.GetAllStates();
+            Dictionary<WorldStateKey, bool> goalState = _currentGoal.GetGoalState();
+
+            // Create a fresh planner instance and plan.
+            _planner = new GoapPlanner();
+            return _planner.CreatePlan(this, availableActions, currentState, goalState);
+        }
+
+        /// <summary>
+        /// Sets up and executes a generated plan
+        /// </summary>
+        private IEnumerator InitiateAndExecutePlan(List<GoapAction> planList) {
+            // Plan found, store it and start execution.
+            _currentPlan = new Queue<GoapAction>(planList);
+
+            if (logPlan) {
+                LogPlan(_currentPlan);
+            }
+
+            _isExecutingPlan = true;
+            yield return StartCoroutine(ExecutePlan());
+        }
+
+        /// <summary>
+        /// Executes the actions in the current plan queue.
+        /// 
+        /// Execution flow:
+        /// 1. For each action in the plan:
+        ///    a) Check if procedural preconditions are met. If not, abort plan.
+        ///    b) Perform the action.
+        ///    c) Apply effects to world state.
+        /// 2. Mark plan as completed.
+        /// </summary>
         private IEnumerator ExecutePlan() {
             if (logExecution) Debug.Log("GladiatorAgent.cs: Starting plan execution...");
 
-            while (currentPlan.Count > 0) {
-                GoapAction currentAction = currentPlan.Dequeue();
+            while (_currentPlan.Count > 0) {
+                GoapAction currentAction = _currentPlan.Dequeue();
 
-                if (logExecution) Debug.Log($"GladiatorAgent.cs: Executing Action: {currentAction.GetType().Name}");
-
-                // Check procedural preconditions right before running.
-                if (!currentAction.CheckProceduralPreconditions()) {
-                    Debug.LogWarning(
-                        $"GladiatorAgent.cs: Procedural precondition failed for action {currentAction.GetType().Name}. Aborting plan.");
-                    isExecutingPlan = false;
-                    currentPlan.Clear();
+                if (!TryExecuteAction(currentAction)) {
                     yield break;
                 }
 
                 yield return StartCoroutine(currentAction.PerformAction());
                 currentAction.ApplyEffectsToWorldState();
 
-                // TODO: Small delay between actions?
+                // TODO: Small delay between actions? ----------------------------again, I wanna add the variable afterActionCompletedCooldown in GoapAction.cs.
                 // yield return new WaitForSeconds(0.1f);
 
-                // if (IsGoalMet(currentGoal)) {
-                //     Debug.Log("GladiatorAgent.cs: oal met mid-plan.");
-                //     break;
-                // }
+                /*? Check if goal is met mid-plan
+                if (IsGoalMet(currentGoal)) {
+                    Debug.Log("GladiatorAgent.cs: Goal met mid-plan.");
+                    break;
+                }*/
             }
 
+            CompletePlanExecution();
+        }
+
+        /// <summary>
+        /// Attempts to execute a single action, checking its procedural preconditions.
+        /// </summary>
+        /// <returns>True if the action can be executed, false otherwise.</returns>
+        private bool TryExecuteAction(GoapAction currentAction) {
+            if (logExecution) Debug.Log($"GladiatorAgent.cs: Executing Action: {currentAction.GetType().Name}");
+
+            // Check procedural preconditions right before running.
+            if (!currentAction.CheckProceduralPreconditions()) {
+                Debug.LogWarning(
+                    $"GladiatorAgent.cs: Procedural precondition failed for action {currentAction.GetType().Name}. Aborting plan.");
+                _isExecutingPlan = false;
+                _currentPlan.Clear();
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Completes the plan execution and resets execution state.
+        /// </summary>
+        private void CompletePlanExecution() {
             if (logExecution) Debug.Log("GladiatorAgent.cs: Plan execution finished.");
-            isExecutingPlan = false;
+            _isExecutingPlan = false;
         }
 
         #endregion
@@ -147,12 +246,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         #region Helper Methods
 
         /// <summary>
-        /// Checks if the goal conditions are currently met in the world state
+        /// Checks if the goal conditions are currently met in the world state.
         /// </summary>
-        /// <param name="goal">GoapGoal class reference (to the goal to look if its met).</param>
-        /// <returns></returns>
+        /// <param name="goal">GoapGoal reference to check if it's met.</param>
+        /// <returns>True if all goal conditions are met, false otherwise.</returns>
         private bool IsGoalMet(GoapGoal goal) {
-            // TODO: Implement GoapGoal class properly
             if (goal == null) return true;
 
             Dictionary<WorldStateKey, bool> goalState = goal.GetGoalState();
@@ -170,8 +268,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// <summary>
         /// Logs the calculated plan to the console
         /// </summary>
-        /// <param name="plan">Reference to the planner.</param>
-        /// TODO: Add the actual planner as a reference.
+        /// <param name="plan">Queue of actions that form the plan</param>
         private void LogPlan(Queue<GoapAction> plan) {
             string planStr = "GladiatorAgent.cs: Found Plan: ";
             foreach (GoapAction action in plan) {

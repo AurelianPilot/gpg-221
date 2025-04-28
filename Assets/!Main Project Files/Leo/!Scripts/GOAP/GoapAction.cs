@@ -14,18 +14,19 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
     {
         [Header("- Action Cost")]
         [SerializeField] protected float cost = 1f; // I'm setting 1 as the default cost for everything.
-        
-        protected Dictionary<WorldStateKey, bool> preRequisites = new();
-        protected Dictionary<WorldStateKey, bool> effects = new();
-        
-        protected AgentWorldState agentWorldState;
-        
+
+        private readonly Dictionary<WorldStateKey, bool> _preRequisites = new();
+        private readonly Dictionary<WorldStateKey, bool> _effects = new();
+
+        private AgentWorldState _agentWorldState;
+
         protected virtual void Awake() {
-            agentWorldState = GetComponent<AgentWorldState>();
-            if (agentWorldState == null) {
-                Debug.LogError($"GoapAction.cs: ({gameObject.name}): AgentWorldState component not found! Action cannot function.");
+            _agentWorldState = GetComponent<AgentWorldState>();
+            if (_agentWorldState == null) {
+                Debug.LogError(
+                    $"GoapAction.cs: ({gameObject.name}): AgentWorldState component not found! Action cannot function.");
             }
-            
+
             SetUpPreRequisites();
             SetUpEffects();
         }
@@ -41,7 +42,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// Actions should also define their effects using the method AddEffect(key, value).
         /// </summary>
         protected abstract void SetUpEffects();
-        
+
         /// <summary>
         /// The core logic of the action (what the agent actually does). 
         /// </summary>
@@ -54,7 +55,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// </summary>
         /// <returns>True if the conditions are met, false if not.</returns>
         public abstract bool CheckProceduralPreconditions();
-        
+
         #endregion
 
         #region Helper Methods for Setup
@@ -65,7 +66,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// <param name="key">WorldStateKey (enum).</param>
         /// <param name="value">Should be true or false.</param>
         protected void AddPrerequisite(WorldStateKey key, bool value) {
-            preRequisites[key] = value;
+            _preRequisites[key] = value;
         }
 
         /// <summary>
@@ -74,13 +75,13 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// <param name="key">WorldStateKey (enum).</param>
         /// <param name="value">Set it to be true or false.</param>
         protected void AddEffect(WorldStateKey key, bool value) {
-            effects[key] = value;
+            _effects[key] = value;
         }
-        
+
         #endregion
 
         #region Public Accesors
-        
+
         /// <summary>
         /// Get the action's cost.
         /// </summary>
@@ -94,7 +95,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// </summary>
         /// <returns>The action's pre-requisistes.</returns>
         public Dictionary<WorldStateKey, bool> GetPrerequisites() {
-            return preRequisites;
+            return _preRequisites;
         }
 
         /// <summary>
@@ -102,15 +103,15 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// </summary>
         /// <returns>The action's effects.</returns>
         public Dictionary<WorldStateKey, bool> GetEffects() {
-            return effects;
+            return _effects;
         }
 
         /// <summary>
         /// Apply effects to the agent's world state.
         /// </summary>
         public void ApplyEffectsToWorldState() {
-            foreach (var effect in effects) {
-                agentWorldState.SetState(effect.Key, effect.Value);
+            foreach (var effect in _effects) {
+                _agentWorldState.SetState(effect.Key, effect.Value);
             }
         }
 

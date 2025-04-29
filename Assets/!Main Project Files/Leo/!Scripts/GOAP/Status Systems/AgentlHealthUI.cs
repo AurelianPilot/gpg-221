@@ -72,7 +72,10 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         private void LateUpdate() {
             UpdatePosition();
         }
-        
+
+        /// <summary>
+        /// Updates the position of the health bar to follow the agent.
+        /// </summary>
         private void UpdatePosition() {
             if (_agentTransform == null) return;
 
@@ -82,7 +85,12 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
                 transform.rotation = Quaternion.LookRotation(transform.position - _mainCamera.transform.position);
             }
         }
-        
+
+        /// <summary>
+        /// Updates the health bar fill and text.
+        /// </summary>
+        /// <param name="currentHealth">Current health value.</param>
+        /// <param name="maxHealth">Maximum health value.</param>
         private void UpdateHealthBar(float currentHealth, float maxHealth) {
             if (healthBarFill == null) return;
 
@@ -101,6 +109,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             }
         }
 
+        /// <summary>
+        /// Gets the appropriate color for the health bar based on remaining health.
+        /// </summary>
+        /// <param name="healthPercent">Health percentage (0-1).</param>
+        /// <returns>Color for the health bar.</returns>
         private Color GetHealthBarColor(float healthPercent) {
             if (healthPercent > 0.6f) {
                 return healthyColor;
@@ -113,19 +126,33 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             }
         }
 
+        /// <summary>
+        /// Shows or hides the health UI.
+        /// </summary>
+        /// <param name="show">Whether to show the UI.</param>
         public void ShowHealthUI(bool show) {
             gameObject.SetActive(show);
         }
 
+        /// <summary>
+        /// Shows the health UI temporarily and then hides it.
+        /// </summary>
+        /// <param name="duration">Duration to show the UI in seconds.</param>
         public void ShowHealthUITemporarily(float duration) {
             ShowHealthUI(true);
             Invoke(nameof(HideHealthUI), duration);
         }
 
+        /// <summary>
+        /// Hides the health UI.
+        /// </summary>
         private void HideHealthUI() {
             ShowHealthUI(false);
         }
-        
+
+        /// <summary>
+        /// Show or hide the health numbers.
+        /// </summary>
         public void SetShowHealthNumbers(bool show) {
             showHealthNumbers = show;
 

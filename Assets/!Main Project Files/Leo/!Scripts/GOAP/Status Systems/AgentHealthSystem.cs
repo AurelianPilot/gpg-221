@@ -10,6 +10,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
     /// </summary>
     public class AgentHealthSystem : MonoBehaviour
     {
+        #region Events
 
         [Serializable] // Current, Max.
         public class HealthChangedEvent : UnityEvent<float, float>
@@ -35,7 +36,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         public AgentDiedEvent OnAgentDied = new();
         public AgentDamagedEvent OnAgentDamaged = new();
         public AgentHealedEvent OnAgentHealed = new();
-        
+
+        #endregion
+
+        #region Health Properties
+
         [Header("- Health Settings")]
         [SerializeField] private float maxHealth = 100f;
 
@@ -51,7 +56,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         private bool regenerateHealth = false;
 
         private float lastDamageTime = -999f;
-        
+
+        #endregion
+
+        #region Stats Properties
+
         [Header("- Combat Stats")]
         [SerializeField] private float attackPower = 10f;
 
@@ -64,6 +73,10 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         private float attackSpeedModifier = 1f;
         private float moveSpeedModifier = 1f;
 
+        #endregion
+
+        #region State Properties
+
         [Header("- State Settings")]
         [SerializeField] private bool invulnerable = false;
 
@@ -71,7 +84,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
 
         private AgentWorldState _agentWorldState;
         private Pathfinding.PathFindingAgent _pathfindingAgent;
-        
+
+        #endregion
+
+        #region Unity Lifecycle
+
         private void Awake() {
             currentHealth = maxHealth;
 
@@ -87,7 +104,16 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         private void Update() {
             ProcessHealthRegeneration();
         }
-        
+
+        #endregion
+
+        #region Health Methods
+        /// <summary>
+        /// Apply damage to the agent.
+        /// </summary>
+        /// <param name="damageAmount">Amount of damage to apply.</param>
+        /// <param name="damageSource">Optional source of the damage.</param>
+        /// <returns>The actual amount of damage applied after modifiers.</returns>
         public float TakeDamage(float damageAmount, GameObject damageSource = null) {
             if (isDead || invulnerable || damageAmount <= 0) return 0f;
 
@@ -109,6 +135,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             return modifiedDamage;
         }
         
+        /// <summary>
+        /// Calculate damage after applying defensive modifiers.
+        /// </summary>
+        /// <param name="rawDamage">The initial damage amount.</param>
+        /// <returns>Modified damage amount.</returns>
         private float CalculateModifiedDamage(float rawDamage) {
             // ! Apply defense modifier: damage reduction based on defense power.
             float effectiveDefense = defensePower * defensePowerModifier;
@@ -121,6 +152,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             return Mathf.Max(1f, finalDamage); // ? Minimum damage is 1.
         }
 
+        /// <summary>
+        /// Heal the agent for the specified amount.
+        /// </summary>
+        /// <param name="healAmount">Amount to heal.</param>
+        /// <returns>The actual amount healed.</returns>
         public float Heal(float healAmount) {
             if (isDead || healAmount <= 0) return 0f;
 
@@ -140,6 +176,9 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             return actualHealAmount;
         }
 
+        /// <summary>
+        /// Process health regeneration over time when enabled.
+        /// </summary>
         private void ProcessHealthRegeneration() {
             if (!regenerateHealth || isDead || currentHealth <= 0 || currentHealth >= maxHealth) return;
 
@@ -151,6 +190,9 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             }
         }
 
+        /// <summary>
+        /// Handle the agent's death.
+        /// </summary>
         private void Die() {
             if (isDead) return;
 
@@ -167,42 +209,72 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
 
             OnAgentDied.Invoke();
         }
-        
+
+        /// <summary>
+        /// Resurrect the agent with the specified health percentage.
+        /// </summary>
+        /// <param name="healthPercent">Percentage of max health to restore (0.0-1.0).</param>
         public void Resurrect(float healthPercent = 1.0f) {
             if (!isDead) return;
 
             isDead = false;
 
+            // Calculate health to restore.
             float healthToRestore = maxHealth * Mathf.Clamp01(healthPercent);
             currentHealth = healthToRestore;
 
+            // Update world state if available.
             if (_agentWorldState != null) {
                 // agentWorldState.SetState(GOAP.WorldStateKey.IsDead, false);
             }
 
+            // Enable pathfinding.
             if (_pathfindingAgent != null) {
                 _pathfindingAgent.enabled = true;
             }
 
+            // Trigger health changed event.
             OnHealthChanged.Invoke(currentHealth, maxHealth);
         }
-        
+
+        #endregion
+
+        #region Stats Methods
+
+        /// <summary>
+        /// Get the current attack power including modifiers.
+        /// </summary>
         public float GetAttackPower() {
             return attackPower * attackPowerModifier;
         }
 
+        /// <summary>
+        /// Get the current defense power including modifiers.
+        /// </summary>
         public float GetDefensePower() {
             return defensePower * defensePowerModifier;
         }
 
+        /// <summary>
+        /// Get the current attack speed including modifiers.
+        /// </summary>
         public float GetAttackSpeed() {
             return attackSpeed * attackSpeedModifier;
         }
 
+        /// <summary>
+        /// Get the current move speed including modifiers.
+        /// </summary>
         public float GetMoveSpeed() {
             return moveSpeed * moveSpeedModifier;
         }
-        
+
+        /// <summary>
+        /// Apply a temporary modifier to a stat.
+        /// </summary>
+        /// <param name="stat">The stat to modify.</param>
+        /// <param name="modifierMultiplier">The multiplier to apply.</param>
+        /// <param name="duration">Duration in seconds, or -1 for permanent.</param>
         public void ApplyStatModifier(AgentStat stat, float modifierMultiplier, float duration = -1f) {
             switch (stat) {
                 case AgentStat.AttackPower:
@@ -216,22 +288,28 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
                     break;
                 case AgentStat.MoveSpeed:
                     moveSpeedModifier = modifierMultiplier;
+                    // Update pathfinding agent speed if available
                     if (_pathfindingAgent != null) {
-                        // Todo:
+                        // Assuming your PathFindingAgent has a public moveSpeed field
                         // pathfindingAgent.moveSpeed = GetMoveSpeed();
                     }
 
                     break;
             }
 
+            // If temporary, start coroutine to remove after duration
             if (duration > 0) {
                 StartCoroutine(RemoveStatModifierAfterDelay(stat, duration));
             }
         }
-        
+
+        /// <summary>
+        /// Coroutine to remove a stat modifier after a delay.
+        /// </summary>
         private System.Collections.IEnumerator RemoveStatModifierAfterDelay(AgentStat stat, float delay) {
             yield return new WaitForSeconds(delay);
 
+            // Reset the modifier.
             switch (stat) {
                 case AgentStat.AttackPower:
                     attackPowerModifier = 1f;
@@ -253,25 +331,43 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             }
         }
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Get current health.
+        /// </summary>
         public float CurrentHealth => currentHealth;
 
-
+        /// <summary>
+        /// Get maximum health.
+        /// </summary>
         public float MaxHealth => maxHealth;
 
-
+        /// <summary>
+        /// Get current health percentage (0-1).
+        /// </summary>
         public float HealthPercentage => maxHealth > 0 ? currentHealth / maxHealth : 0;
 
-
+        /// <summary>
+        /// Check if agent is dead.
+        /// </summary>
         public bool IsDead => isDead;
 
-
+        /// <summary>
+        /// Set invulnerability status.
+        /// </summary>
         public void SetInvulnerable(bool value) {
             invulnerable = value;
         }
 
+        #endregion
     }
 
-
+    /// <summary>
+    /// Enum for agent stats that can be modified.
+    /// </summary>
     public enum AgentStat
     {
         AttackPower,

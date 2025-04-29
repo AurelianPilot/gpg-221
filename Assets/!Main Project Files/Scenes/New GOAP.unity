@@ -693,8 +693,7 @@ RectTransform:
   m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1664428123}
-  - {fileID: 898871465}
+  - {fileID: 2060982065}
   m_Father: {fileID: 1540652719}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -778,7 +777,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mode: 1
-  debugPanelRoot: {fileID: 625859078}
+  debugPanelRoot: {fileID: 2060982064}
   agentNameText: {fileID: 380946103}
   worldStateText: {fileID: 429627162}
   currentGoalText: {fileID: 1748133879}
@@ -816,13 +815,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 898871464}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2096606370}
-  m_Father: {fileID: 625859079}
+  m_Father: {fileID: 2060982065}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -1299,6 +1298,7 @@ GameObject:
   - component: {fileID: 1540652722}
   - component: {fileID: 1540652721}
   - component: {fileID: 1540652720}
+  - component: {fileID: 1540652725}
   m_Layer: 0
   m_Name: '[Agent] Gladiator'
   m_TagString: Untagged
@@ -1486,6 +1486,32 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &1540652725
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1540652715}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 628c4f59e313d364fb16714199f7b156, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mode: 1
+  debugPanelRoot: {fileID: 625859078}
+  agentNameText: {fileID: 380946103}
+  worldStateText: {fileID: 429627162}
+  currentGoalText: {fileID: 1748133879}
+  currentActionText: {fileID: 1336968743}
+  pathfindingText: {fileID: 501338881}
+  targetAgent: {fileID: 1540652722}
+  offsetFromAgent: {x: 0, y: 2.5, z: 0}
+  lookAtCamera: 1
+  updateInterval: 0.2
+  showDebugPanel: 1
+  togglePanelKey: 282
+  compactMode: 0
 --- !u!1 &1664428122
 GameObject:
   m_ObjectHideFlags: 0
@@ -1517,7 +1543,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1247498943}
-  m_Father: {fileID: 625859079}
+  m_Father: {fileID: 2060982065}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -1871,6 +1897,43 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2060982064
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2060982065}
+  m_Layer: 0
+  m_Name: Debug Items
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &2060982065
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2060982064}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1664428123}
+  - {fileID: 898871465}
+  m_Father: {fileID: 625859079}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &2096606369
 GameObject:
   m_ObjectHideFlags: 0

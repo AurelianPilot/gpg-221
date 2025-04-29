@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using _Main_Project_Files.Leo._Scripts.GOAP.Actions;
 using TMPro;
 using UnityEngine;
 
@@ -31,10 +32,10 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Debugging
         [SerializeField] private TextMeshProUGUI pathfindingText;
 
         [Header("- Agent Reference")]
-        [SerializeField] private GOAP.GladiatorAgent targetAgent;
+        [SerializeField] private GladiatorAgent targetAgent;
 
         [Header("- World Space Settings")]
-        [SerializeField] private Vector3 offsetFromAgent = new Vector3(0, 2.5f, 0);
+        [SerializeField] private Vector3 offsetFromAgent = new(0, 2.5f, 0);
 
         [SerializeField] private bool lookAtCamera = true;
 
@@ -45,7 +46,6 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Debugging
         [SerializeField] private KeyCode togglePanelKey = KeyCode.F1;
         [SerializeField] private bool compactMode;
 
-        // References to components.
         private AgentWorldState _agentWorldState;
         private Pathfinding.PathFindingAgent _pathfindingAgent;
         private Camera _mainCamera;

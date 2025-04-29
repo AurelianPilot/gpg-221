@@ -1,9 +1,8 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace _Main_Project_Files.Leo._Scripts.GOAP
+namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
 {
     /// <summary>
     /// This is the base class for all actions in the GOAP system.

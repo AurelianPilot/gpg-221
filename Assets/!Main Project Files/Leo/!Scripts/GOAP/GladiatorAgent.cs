@@ -25,8 +25,8 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
         [Header("- State")]
         private Queue<GoapAction> _currentPlan = new();
-
         private bool _isExecutingPlan;
+        private GoapAction _currentExecutingAction = null;
 
         [Header("- Debugging")]
         [SerializeField] private bool logPlan;
@@ -98,6 +98,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
                 yield return null;
             }
+            // ReSharper disable once IteratorNeverReturns
         }
 
         /// <summary>
@@ -193,8 +194,10 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
             while (_currentPlan.Count > 0) {
                 GoapAction currentAction = _currentPlan.Dequeue();
+                _currentExecutingAction = currentAction;
 
                 if (!TryExecuteAction(currentAction)) {
+                    _currentExecutingAction = null;
                     yield break;
                 }
 
@@ -209,6 +212,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
                     Debug.Log("GladiatorAgent.cs: Goal met mid-plan.");
                     break;
                 }*/
+                _currentExecutingAction = null;
             }
 
             CompletePlanExecution();
@@ -277,6 +281,55 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
             planStr += "GOAL.";
             Debug.Log(planStr);
+        }
+
+        #endregion
+        
+        #region Debug Methods
+
+        /// <summary>
+        /// Gets the agent's current goal for debugging purposes.
+        /// </summary>
+        /// <returns>The current goal or null if no goal is set.</returns>
+        public GoapGoal GetCurrentGoal()
+        {
+            return _currentGoal;
+        }
+
+        /// <summary>
+        /// Gets the agent's current executing action for debugging purposes.
+        /// </summary>
+        /// <returns>The current action being executed or null if no action is running.</returns>
+        /// <summary>
+        /// Gets the agent's current executing action for debugging purposes.
+        /// </summary>
+        /// <returns>The current action being executed or null if no action is running.</returns>
+        public GoapAction GetCurrentAction()
+        {
+            return _currentExecutingAction;
+        }
+
+        /// <summary>
+        /// Gets the agent's current plan as a list.
+        /// </summary>
+        /// <returns>A list of actions in the current plan or empty list if no plan exists.</returns>
+        public List<GoapAction> GetCurrentPlan()
+        {
+            if (_currentPlan != null && _currentPlan.Count > 0)
+            {
+                return new List<GoapAction>(_currentPlan);
+            }
+    
+            return new List<GoapAction>();
+        }
+
+        /// <summary>
+        /// Gets the execution status of the agent.
+        /// </summary>
+        /// <returns>True if the agent is currently executing a plan, false otherwise.</returns>
+        public bool IsExecutingPlan()
+        {
+            return _isExecutingPlan;
         }
 
         #endregion

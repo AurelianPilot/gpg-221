@@ -18,7 +18,6 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
         [Header("- GOAP Core")]
         [SerializeField] private AgentWorldState agentWorldState;
-
         [SerializeField] private List<GoapAction> availableActions;
         private GoapGoal _currentGoal;
         private GoapPlanner _planner;
@@ -30,8 +29,16 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
         [Header("- Debugging")]
         [SerializeField] private bool logPlan;
-
         [SerializeField] private bool logExecution;
+        
+        public enum AgentRole { Warrior, Healer }
+        public enum TeamID { TeamA, TeamB }
+
+        [Header("- Team & Role")]
+        public TeamID teamID;
+        public AgentRole agentRole;
+        public List<GladiatorAgent> knownAllies = new();
+        public List<GladiatorAgent> knownEnemies = new();
 
         #endregion
 
@@ -70,10 +77,30 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         }
 
         /// <summary>
-        /// Sets the initial goal for the agent.
+        /// Sets the initial goal for the agent depending on its role.
         /// </summary>
-        private void SetInitialGoal() {
-            _currentGoal = new GoapGoal("WanderGoal", WorldStateKey.IsWandering, true);
+        private void SetInitialGoal()
+        {
+            if (agentWorldState == null) agentWorldState = GetComponent<AgentWorldState>();
+
+            agentWorldState.SetState(WorldStateKey.IsWarriorRole, agentRole == AgentRole.Warrior);
+            agentWorldState.SetState(WorldStateKey.IsHealerRole, agentRole == AgentRole.Healer);
+
+            if (agentRole == AgentRole.Warrior)
+            {
+                //_currentGoal = new GoapGoal("AttackEnemiesGoal", WorldStateKey.EnemyDetected, false, 5);
+                _currentGoal = new GoapGoal("EngageInCombatGoal", WorldStateKey.IsInCombat, true, 5);
+            }
+            else if (agentRole == AgentRole.Healer)
+            {
+                _currentGoal = new GoapGoal("KeepAlliesHealthyGoal", WorldStateKey.AllyNeedsHealing, false, 10);
+            }
+            else
+            {
+                _currentGoal = new GoapGoal("WanderGoal", WorldStateKey.IsWandering, true, 1);
+            }
+
+            Debug.Log($"{gameObject.name} starting with goal: {_currentGoal.GoalName}");
         }
 
         #endregion
@@ -135,7 +162,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// Creates a plan and executes it if valid.
         /// </summary>
         private IEnumerator CreateAndExecutePlan() {
-            Debug.Log("GladiatorAgent.cs: Finding a plan...");
+            Debug.Log($"GladiatorAgent.cs: Finding a plan for {transform.name}...");
 
             // Create a new plan.
             List<GoapAction> planList = GeneratePlan();

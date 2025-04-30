@@ -12,10 +12,18 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         HasEnemyTarget,
         IsEnemyInRange,
         IsEnemyInSight,
+        EnemyDetected,
+
+        // Ally related.
+        AllyDetected,
+        AllyNeedsHealing,
+        HasAllyTarget,
+        IsInHealRange,
         
         // Combat related.
         HasWeaponEquipped,
         IsInCombat,
+        IsInAttackRange,
         
         // Territory related.
         IsInOwnTerritory,
@@ -24,6 +32,10 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         
         // Movement Related.
         IsAtTargetLocation,
-        IsWandering
+        IsWandering,
+        
+        // ! Role of the agent !
+        IsHealerRole,
+        IsWarriorRole
     }
 }

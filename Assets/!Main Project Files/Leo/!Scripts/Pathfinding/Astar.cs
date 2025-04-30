@@ -11,40 +11,24 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
     public class Astar : MonoBehaviour
     {
         // These lists are to track the nodes during the pathfinding process.
-        private readonly List<Node> openList = new();
-        private readonly List<Node> closeList = new();
+        private readonly List<Node> _openList = new();
+        private readonly List<Node> _closeList = new();
 
         // public List<Node> CurrentPath { get; private set; } = new List<Node>();
 
         [Header("- Path Settings")] [SerializeField]
         private Vector3 startPosition;
 
-        [Header("- Input Settings")] [SerializeField]
-        private KeyCode runPathfindingKeyCode = KeyCode.Space;
-
-        [SerializeField] private Button pathfindingButton;
-
         [SerializeField] private Vector3 goalPosition;
 
         private GridManager _grid;
-        private Node startNode;
-        private Node goalNode;
-        private Node currentNode;
+        private Node _startNode;
+        private Node _goalNode;
+        private Node _currentNode;
 
         private void Start()
         {
             _grid = GetComponent<GridManager>();
-
-            // UI initialization/dummy prevention.
-            if (pathfindingButton != null) pathfindingButton.onClick.AddListener(RunPathfinding);
-        }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(runPathfindingKeyCode))
-            {
-                RunPathfinding();
-            }
         }
 
         #region Public Methods
@@ -52,68 +36,68 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
         public List<Node> FindPath(Vector3 start, Vector3 goal)
         {
             // Get the indexes from the position of our nodes.
-            startNode = _grid.GetNodeIndex(start);
-            goalNode = _grid.GetNodeIndex(goal);
+            _startNode = _grid.GetNodeIndex(start);
+            _goalNode = _grid.GetNodeIndex(goal);
 
-            if (startNode == null || goalNode == null)
+            if (_startNode == null || _goalNode == null)
             {
                 Debug.LogError($"Astar.cs in {gameObject.name}: Start or goal position is outside the grid.");
                 return new List<Node>(); 
             }
 
             // Clear to start fresh every time this method runs.
-            openList.Clear();
-            closeList.Clear();
+            _openList.Clear();
+            _closeList.Clear();
             
             // Initializes the start node.
-            startNode.GCost = 0;
-            startNode.HCost = CalculateHCost(startNode, goalNode);
+            _startNode.GCost = 0;
+            _startNode.HCost = CalculateHCost(_startNode, _goalNode);
 
             // Adds the start node to the open list to begin processing.
-            startNode.GCost = 0;
-            startNode.HCost = CalculateHCost(startNode, goalNode);
+            _startNode.GCost = 0;
+            _startNode.HCost = CalculateHCost(_startNode, _goalNode);
 
-            openList.Add(startNode);
+            _openList.Add(_startNode);
 
             // Debug visualizer.
             //startNode.UpdateVisuals(NodeState.Open);
             //goalNode.UpdateVisuals(NodeState.Closed);
 
             // Pathfinding loop:
-            while (openList.Count > 0)
+            while (_openList.Count > 0)
             {
-                currentNode = FindLowestFCostNode(openList);
+                _currentNode = FindLowestFCostNode(_openList);
 
-                if (currentNode == goalNode)
+                if (_currentNode == _goalNode)
                 {
                     // CHANGED: Return path instead of storing it
-                    return RetracePath(startNode, goalNode);
+                    return RetracePath(_startNode, _goalNode);
                 }
 
                 // Move current node from the open to the closed list.
-                openList.Remove(currentNode);
-                closeList.Add(currentNode);
+                _openList.Remove(_currentNode);
+                _closeList.Add(_currentNode);
 
-                currentNode.UpdateVisuals(NodeState.Closed);
+                _currentNode.UpdateVisuals(NodeState.Closed);
 
-                var neighbors = GetNeighbors(currentNode);
+                var neighbors = GetNeighbors(_currentNode);
 
                 foreach (var neighbor in neighbors)
                 {
                     // Skip if the neighbor is not walkable or was already checked.
-                    if (!neighbor.Walkable || closeList.Contains(neighbor)) continue;
+                    if (!neighbor.Walkable || _closeList.Contains(neighbor)) continue;
 
-                    var tentativeGCost = currentNode.GCost + CalculateDistance(currentNode, neighbor);
+                    var tentativeGCost = _currentNode.GCost + CalculateDistance(_currentNode, neighbor);
 
-                    if (tentativeGCost < neighbor.GCost || !openList.Contains(neighbor))
+                    if (tentativeGCost < neighbor.GCost || !_openList.Contains(neighbor))
                     {
                         neighbor.GCost = tentativeGCost;
-                        neighbor.HCost = CalculateHCost(neighbor, goalNode);
-                        neighbor.Parent = currentNode;
+                        neighbor.HCost = CalculateHCost(neighbor, _goalNode);
+                        neighbor.Parent = _currentNode;
 
-                        if (!openList.Contains(neighbor))
+                        if (!_openList.Contains(neighbor))
                         {
-                            openList.Add(neighbor);
+                            _openList.Add(neighbor);
                             neighbor.UpdateVisuals(NodeState.Open);
                         }
                     }
@@ -157,8 +141,8 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
                 node.UpdateVisuals(NodeState.Default);
             }
 
-            openList.Clear();
-            closeList.Clear();
+            _openList.Clear();
+            _closeList.Clear();
         }
 
         // Calculate the Manhattan distance between two nodes.
@@ -180,7 +164,7 @@ namespace _Main_Project_Files.Leo._Scripts.Pathfinding
             var path = new List<Node>();
             var currentNode = goalNode;
 
-            while (currentNode != startNode)
+            while (currentNode != _startNode)
             {
                 path.Add(currentNode);
                 currentNode = currentNode.Parent;

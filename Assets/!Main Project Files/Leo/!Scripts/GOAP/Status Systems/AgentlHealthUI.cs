@@ -11,8 +11,8 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
     public class AgentHealthUI : MonoBehaviour
     {
         [Header("- References")]
+        [SerializeField] private GameObject healthPanelRoot;
         [SerializeField] private AgentHealthSystem healthSystem;
-
         [SerializeField] private Image healthBarFill;
         [SerializeField] private TextMeshProUGUI healthText;
         [SerializeField] private TextMeshProUGUI agentNameText;
@@ -32,7 +32,6 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         
         private Camera _mainCamera;
         private Transform _agentTransform;
-        private Canvas _worldSpaceCanvas;
 
         private void Awake() {
             if (healthSystem == null) {
@@ -42,14 +41,17 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             if (healthSystem == null) {
                 Debug.LogError(
                     "AgentHealthUI.cs: No AgentHealthSystem found in parent objects. Health UI will not function.");
-                this.enabled = false;
+                enabled = false;
                 return;
             }
 
             _agentTransform = healthSystem.transform;
             _mainCamera = Camera.main;
-            _worldSpaceCanvas = GetComponent<Canvas>();
 
+            if (healthPanelRoot == null) {
+                Debug.LogError($"AgentHealthUI.cs: 'Health Panel Root' is not assigned in the Inspector on GameObject '{gameObject.name}");
+            }
+            
             if (agentNameText != null) {
                 agentNameText.text = _agentTransform.name;
             }
@@ -77,12 +79,14 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         /// Updates the position of the health bar to follow the agent.
         /// </summary>
         private void UpdatePosition() {
-            if (_agentTransform == null) return;
-
-            transform.position = _agentTransform.position + offset;
+            Vector3 targetPosition = _agentTransform.position + offset;
+            healthPanelRoot.transform.position = targetPosition;
 
             if (lookAtCamera && _mainCamera != null) {
-                transform.rotation = Quaternion.LookRotation(transform.position - _mainCamera.transform.position);
+                Vector3 lookDirection = healthPanelRoot.transform.position - _mainCamera.transform.position;
+                if (lookDirection != Vector3.zero) {
+                    healthPanelRoot.transform.rotation = Quaternion.LookRotation(lookDirection);
+                }
             }
         }
 
@@ -131,7 +135,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         /// </summary>
         /// <param name="show">Whether to show the UI.</param>
         public void ShowHealthUI(bool show) {
-            gameObject.SetActive(show);
+            if (healthPanelRoot != null) healthPanelRoot.SetActive(show);
         }
 
         /// <summary>
@@ -147,7 +151,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
         /// Hides the health UI.
         /// </summary>
         private void HideHealthUI() {
-            ShowHealthUI(false);
+            if (healthPanelRoot != null) healthPanelRoot.SetActive(false);
         }
 
         /// <summary>

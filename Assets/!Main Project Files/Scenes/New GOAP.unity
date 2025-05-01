@@ -2909,6 +2909,7 @@ GameObject:
   - component: {fileID: 1540652727}
   - component: {fileID: 1540652729}
   - component: {fileID: 1540652730}
+  - component: {fileID: 1540652731}
   m_Layer: 8
   m_Name: '[Agent] Gladiator A'
   m_TagString: Untagged
@@ -3057,7 +3058,6 @@ MonoBehaviour:
   - {fileID: 1540652720}
   logPlan: 1
   logExecution: 1
-  logGoalSelection: 1
   teamID: 0
   agentRole: 0
   knownAllies: []
@@ -3136,7 +3136,6 @@ MonoBehaviour:
   moveSpeed: 5
   invulnerable: 0
   isDead: 0
-  deathDisappearDelay: 0.5
 --- !u!114 &1540652727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3149,7 +3148,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4605bd7b7df0be40a9e9012d02e1d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cleanupInterval: 1
 --- !u!135 &1540652728
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -3184,9 +3182,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cost: 1
-  targetAttackRange: 1.8
+  targetRange: 1.8
   arrivalDistance: 0.5
-  moveTimeout: 15
+  moveTimeout: 20
 --- !u!114 &1540652730
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3203,7 +3201,19 @@ MonoBehaviour:
   attackRange: 2
   attackCooldown: 1.5
   defaultDamage: 10
-  actionDuration: 0.5
+--- !u!114 &1540652731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1540652715}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ab9103fc9ddbe4e815e321c940da5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cost: 1
 --- !u!1 &1590047943
 GameObject:
   m_ObjectHideFlags: 0
@@ -3360,6 +3370,7 @@ GameObject:
   - component: {fileID: 1640445610}
   - component: {fileID: 1640445609}
   - component: {fileID: 1640445622}
+  - component: {fileID: 1640445623}
   m_Layer: 8
   m_Name: '[Agent] Gladiator B'
   m_TagString: Untagged
@@ -3380,9 +3391,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cost: 1
-  targetAttackRange: 1.8
+  targetRange: 1.8
   arrivalDistance: 0.5
-  moveTimeout: 15
+  moveTimeout: 20
 --- !u!114 &1640445610
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3395,7 +3406,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b4605bd7b7df0be40a9e9012d02e1d46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cleanupInterval: 1
 --- !u!135 &1640445611
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -3452,7 +3462,6 @@ MonoBehaviour:
   moveSpeed: 5
   invulnerable: 0
   isDead: 0
-  deathDisappearDelay: 0.5
 --- !u!114 &1640445613
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3505,7 +3514,6 @@ MonoBehaviour:
   - {fileID: 1640445613}
   logPlan: 1
   logExecution: 1
-  logGoalSelection: 1
   teamID: 1
   agentRole: 0
   knownAllies: []
@@ -3654,7 +3662,19 @@ MonoBehaviour:
   attackRange: 2
   attackCooldown: 1.5
   defaultDamage: 10
-  actionDuration: 0.5
+--- !u!114 &1640445623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1640445608}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57ab9103fc9ddbe4e815e321c940da5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cost: 1
 --- !u!1 &1664428122
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,101 +6,86 @@ using _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems;
 namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
 {
     [RequireComponent(typeof(AgentHealthSystem))]
-    [RequireComponent(typeof(GladiatorAgent))] 
+    [RequireComponent(typeof(GladiatorAgent))]
     [RequireComponent(typeof(AgentWorldState))]
     public class AttackAction : GoapAction
     {
         [Header("- Attack Settings")]
         [SerializeField] private float attackRange = 2f;
+
         [SerializeField] private float attackCooldown = 1.5f;
         [SerializeField] private int defaultDamage = 10;
 
         private AgentHealthSystem _healthSystem;
         private GladiatorAgent _gladiatorAgent;
-        private AgentWorldState _agentWorldState;
-        private GladiatorAgent _targetEnemy;
         private float _lastAttackTime = -999f;
 
-        protected override void Awake()
-        {
+        protected override void Awake() {
             base.Awake();
             _healthSystem = GetComponent<AgentHealthSystem>();
             _gladiatorAgent = GetComponent<GladiatorAgent>();
-            _agentWorldState = GetComponent<AgentWorldState>();
         }
 
-        protected override void SetUpPreRequisites()
-        {
+        protected override void SetUpPreRequisites() {
             AddPrerequisite(WorldStateKey.EnemyDetected, true);
+            AddPrerequisite(WorldStateKey.HasEnemyTarget, true);
             AddPrerequisite(WorldStateKey.IsInAttackRange, true);
         }
 
-        protected override void SetUpEffects()
-        {
+        protected override void SetUpEffects() {
             AddEffect(WorldStateKey.IsInCombat, true);
         }
 
-        public override bool CheckProceduralPreconditions()
-        {
-            _targetEnemy = FindBestEnemyTarget();
-            if (_targetEnemy == null)
-            {
-                _agentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
-                _agentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
-                return false;
+        public override bool CheckProceduralPreconditions() {
+            GladiatorAgent currentTarget = _gladiatorAgent.CurrentTargetEnemy;
+            bool targetIsValid = currentTarget != null && !currentTarget.GetComponent<AgentHealthSystem>().IsDead;
+
+            AgentWorldState.SetState(WorldStateKey.HasEnemyTarget, targetIsValid);
+
+            bool inRange = false;
+            if (targetIsValid) {
+                inRange = Vector3.Distance(transform.position, currentTarget.transform.position) <= attackRange;
             }
-            
-            // ! There is a target.
-            _agentWorldState.SetState(WorldStateKey.HasEnemyTarget, true);
 
-            // Range check.
-            bool inRange = Vector3.Distance(transform.position, _targetEnemy.transform.position) <= attackRange;
-            _agentWorldState.SetState(WorldStateKey.IsInAttackRange, inRange); 
-
-            AgentHealthSystem targetHealth = _targetEnemy.GetComponent<AgentHealthSystem>();
-            bool targetAlive = targetHealth != null && !targetHealth.IsDead;
-
-            return inRange && targetAlive;
+            AgentWorldState.SetState(WorldStateKey.IsInAttackRange, inRange);
+            return targetIsValid && inRange;
         }
 
-        public override IEnumerator PerformAction()
-        {
-            if (_targetEnemy == null || Time.time < _lastAttackTime + attackCooldown)
-            {
+        public override IEnumerator PerformAction() {
+            GladiatorAgent targetEnemy = _gladiatorAgent.CurrentTargetEnemy;
+
+            if (targetEnemy == null || Time.time < _lastAttackTime + attackCooldown) {
+                if (targetEnemy == null) AgentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
                 yield break;
             }
 
-            AgentHealthSystem targetHealth = _targetEnemy.GetComponent<AgentHealthSystem>();
-            if (targetHealth != null && !targetHealth.IsDead)
-            {
-                Debug.Log($"[Attack Action] {gameObject.name} attacking {_targetEnemy.name}");
+            AgentHealthSystem targetHealth = targetEnemy.GetComponent<AgentHealthSystem>();
+            if (targetHealth != null && !targetHealth.IsDead) {
+                Debug.Log($"[Attack Action] {gameObject.name} attacking {targetEnemy.name}");
                 float attackPower = _healthSystem != null ? _healthSystem.GetAttackPower() : defaultDamage;
                 targetHealth.TakeDamage(attackPower, gameObject);
                 _lastAttackTime = Time.time;
 
-                // Check if target died after attack.
-                if (targetHealth.IsDead)
-                {
-                     Debug.Log($"[Attack Action] {gameObject.name} defeated {_targetEnemy.name}");
-                     // ? I'm not sure if to update world state immediately, or let individual perceptions handle it.
-                     // _agentWorldState.SetState(WorldStateKey.EnemyDetected, false);
-                     // _agentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
-                     // _agentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
-                     _targetEnemy = null;
+                if (targetHealth.IsDead) {
+                    Debug.Log($"[Attack Action] {gameObject.name} defeated {targetEnemy.name}");
+                    _gladiatorAgent.CurrentTargetEnemy = null;
+                    AgentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
+                    AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
                 }
             }
-            else
-            {
-                 // ? Target might have died before attack landed by other agent.
-                 _targetEnemy = null;
-                 _agentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
-                 _agentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
+            else {
+                if (targetEnemy != null)
+                    Debug.LogWarning(
+                        $"[Attack Action] {gameObject.name} target {targetEnemy.name} was dead or invalid before attack.");
+                _gladiatorAgent.CurrentTargetEnemy = null;
+                AgentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
+                AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
             }
 
             yield return new WaitForSeconds(0.1f);
         }
 
-        private GladiatorAgent FindBestEnemyTarget()
+        /*private GladiatorAgent FindBestEnemyTarget()
         {
              if (_gladiatorAgent == null || _gladiatorAgent.knownEnemies.Count == 0) return null;
 
@@ -124,6 +109,6 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                  }
              }
              return closestAliveEnemy;
-         }
+         }*/
     }
 }

@@ -12,7 +12,8 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
     public class MoveToEnemyAction : GoapAction
     {
         [Header("- Movement Settings")]
-        [Tooltip("How close the agent needs to be to the target to be considered 'in range'. Should match or be slightly less than AttackAction's range.")]
+        [Tooltip(
+            "How close the agent needs to be to the target to be considered 'in range'. Should match or be slightly less than AttackAction's range.")]
         [SerializeField]
         private float targetRange = 1.8f;
 
@@ -24,7 +25,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
 
         private GladiatorAgent _gladiatorAgent;
         private PathFindingAgent _pathfindingAgent;
-        private AgentWorldState _agentWorldState;
+        //private AgentWorldState _agentWorldState;
 
         private GladiatorAgent _currentTargetEnemy;
         private bool _actionIsRunning;
@@ -35,7 +36,6 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         protected override void Awake() {
             base.Awake();
             _gladiatorAgent = GetComponent<GladiatorAgent>();
-            _agentWorldState = GetComponent<AgentWorldState>();
             _pathfindingAgent = GetComponent<PathFindingAgent>();
 
             if (_pathfindingAgent.astar == null) {
@@ -49,6 +49,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         /// </summary>
         protected override void SetUpPreRequisites() {
             AddPrerequisite(WorldStateKey.EnemyDetected, true);
+            AddPrerequisite(WorldStateKey.HasEnemyTarget, true);
         }
 
         /// <summary>
@@ -59,54 +60,59 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         }
 
         /// <summary>
-        /// Checks dynamic conditions immediately before execution. Finds and validates the target enemy.
+        /// Checks dynamic conditions immediately before execution. Validates the assigned target enemy.
         /// </summary>
         public override bool CheckProceduralPreconditions() {
             if (_actionIsRunning) return false;
 
-            _currentTargetEnemy = FindBestEnemyTarget();
-            if (_currentTargetEnemy == null) {
-                _agentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
-                return false;
-            }
+            GladiatorAgent currentTarget = _gladiatorAgent.CurrentTargetEnemy;
+            bool targetIsValid = currentTarget != null && !currentTarget.GetComponent<AgentHealthSystem>().IsDead;
 
-            _agentWorldState.SetState(WorldStateKey.HasEnemyTarget, true);
+            AgentWorldState.SetState(WorldStateKey.HasEnemyTarget, targetIsValid);
 
             bool canPathfind = _pathfindingAgent != null && _pathfindingAgent.astar != null;
-            if (!canPathfind) Debug.LogError($"MoveToEnemyAction on {gameObject.name}: Pathfinding setup invalid.");
+            if (!canPathfind && targetIsValid)
+                Debug.LogError(
+                    $"MoveToEnemyAction on {gameObject.name}: Pathfinding setup invalid but has valid target!");
 
-            return _currentTargetEnemy != null && canPathfind;
+            return targetIsValid && canPathfind;
         }
 
         /// <summary>
         /// Executes the movement logic towards the target enemy.
         /// </summary>
         public override IEnumerator PerformAction() {
-            if (_currentTargetEnemy == null) {
-                Debug.LogWarning(
-                    $"MoveToEnemyAction ({gameObject.name}): Target became null before PerformAction started.");
+            // Use the target assigned by FindEnemyAction
+            GladiatorAgent targetEnemy = _gladiatorAgent.CurrentTargetEnemy;
+
+            if (targetEnemy == null) {
+                // Check if target is still valid when action starts
+                Debug.LogWarning($"MoveToEnemyAction ({gameObject.name}): Target was null when PerformAction started.");
+                _actionIsRunning = false; // Ensure state is reset if we exit early
+                AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false); // Not in range if no target
                 yield break;
             }
 
             _actionIsRunning = true;
-            Debug.Log($"MoveToEnemyAction ({gameObject.name}): Starting movement towards {_currentTargetEnemy.name}");
+            Debug.Log($"MoveToEnemyAction ({gameObject.name}): Starting movement towards {targetEnemy.name}");
 
             float timeStartedMoving = Time.time;
-            Vector3 lastTargetPosition = _currentTargetEnemy.transform.position;
+            Vector3 lastTargetPosition = targetEnemy.transform.position;
 
             _pathfindingAgent.FollowPath(lastTargetPosition);
 
             while (_actionIsRunning) {
-                if (_currentTargetEnemy == null || _currentTargetEnemy.GetComponent<AgentHealthSystem>().IsDead) {
+                targetEnemy = _gladiatorAgent.CurrentTargetEnemy;
+                if (targetEnemy == null || targetEnemy.GetComponent<AgentHealthSystem>().IsDead) {
                     Debug.Log(
-                        $"MoveToEnemyAction ({gameObject.name}): Target {_currentTargetEnemy?.name ?? "NULL"} is dead or lost. Aborting move.");
+                        $"MoveToEnemyAction ({gameObject.name}): Target {targetEnemy?.name ?? "NULL"} is dead or lost. Aborting move.");
                     _actionIsRunning = false;
-                    _agentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
-                    _agentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
+                    AgentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
+                    AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
                     yield break;
                 }
 
-                Vector3 currentTargetPos = _currentTargetEnemy.transform.position;
+                Vector3 currentTargetPos = targetEnemy.transform.position;
                 float distanceToTarget = Vector3.Distance(transform.position, currentTargetPos);
 
                 if (distanceToTarget <= targetRange) {
@@ -124,16 +130,16 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                         Debug.LogWarning(
                             $"MoveToEnemyAction ({gameObject.name}): Pathfollowing stopped unexpectedly far from waypoint. Aborting move.");
                         _actionIsRunning = false;
-                        _agentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
+                        AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
                         yield break;
                     }
                 }
 
                 if (Time.time > timeStartedMoving + moveTimeout) {
                     Debug.LogWarning(
-                        $"MoveToEnemyAction ({gameObject.name}): Movement towards {_currentTargetEnemy.name} timed out!");
+                        $"MoveToEnemyAction ({gameObject.name}): Movement towards {targetEnemy.name} timed out!");
                     _actionIsRunning = false;
-                    _agentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
+                    AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
                     yield break;
                 }
 
@@ -142,13 +148,15 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                     lastTargetPosition = currentTargetPos;
                 }
 
+
                 yield return null;
             }
 
             _actionIsRunning = false;
+            targetEnemy = _gladiatorAgent.CurrentTargetEnemy;
             float finalDist = Vector3.Distance(transform.position,
-                _currentTargetEnemy != null ? _currentTargetEnemy.transform.position : Vector3.positiveInfinity);
-            _agentWorldState.SetState(WorldStateKey.IsInAttackRange, finalDist <= targetRange);
+                targetEnemy != null ? targetEnemy.transform.position : Vector3.positiveInfinity);
+            AgentWorldState.SetState(WorldStateKey.IsInAttackRange, finalDist <= targetRange);
             Debug.Log($"MoveToEnemyAction ({gameObject.name}): Finished. Final distance: {finalDist:F2}m");
         }
 

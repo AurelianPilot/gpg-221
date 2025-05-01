@@ -94,8 +94,20 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
 
              List<GladiatorAgent> currentKnownEnemies = new List<GladiatorAgent>(_gladiatorAgent.knownEnemies);
 
-             foreach (var enemy in currentKnownEnemies) {
+             foreach(var enemy in currentKnownEnemies)
+             {
                  if (enemy == null) continue;
+                 AgentHealthSystem enemyHealth = enemy.GetComponent<AgentHealthSystem>();
+                 if (enemyHealth == null || enemyHealth.IsDead) continue;
+
+                 float dist = Vector3.Distance(transform.position, enemy.transform.position);
+                 if (dist < minDistance)
+                 {
+                     minDistance = dist;
+                     closestAliveEnemy = enemy;
+                 }
              }
-        }
+             return closestAliveEnemy;
+         }
+    }
 }

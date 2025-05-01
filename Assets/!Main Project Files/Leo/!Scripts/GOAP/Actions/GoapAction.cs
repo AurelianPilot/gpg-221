@@ -17,11 +17,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         private readonly Dictionary<WorldStateKey, bool> _preRequisites = new();
         private readonly Dictionary<WorldStateKey, bool> _effects = new();
 
-        private AgentWorldState _agentWorldState;
+        protected AgentWorldState AgentWorldState;
 
         protected virtual void Awake() {
-            _agentWorldState = GetComponent<AgentWorldState>();
-            if (_agentWorldState == null) {
+            AgentWorldState = GetComponent<AgentWorldState>();
+            if (AgentWorldState == null) {
                 Debug.LogError(
                     $"GoapAction.cs: ({gameObject.name}): AgentWorldState component not found! Action cannot function.");
             }
@@ -110,7 +110,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         /// </summary>
         public void ApplyEffectsToWorldState() {
             foreach (var effect in _effects) {
-                _agentWorldState.SetState(effect.Key, effect.Value);
+                AgentWorldState.SetState(effect.Key, effect.Value);
             }
         }
 

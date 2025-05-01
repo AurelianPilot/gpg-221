@@ -40,13 +40,13 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
             Dictionary<WorldStateKey, bool> currentState, Dictionary<WorldStateKey, bool> goalState) {
             if (_showDebugLogs)
                 Debug.Log("GoapPlanner.cs: Starting to create a plan...");
-
-            // Step 1: Get only the actions that can be performed right now.
-            var possibleActions = FilterPossibleActions(availableActions);
-            if (possibleActions.Count == 0) {
-                Debug.LogWarning("GoapPlanner.cs: No possible actions available!");
+            
+            var possibleActions = new List<GoapAction>(availableActions);
+             if (possibleActions.Count == 0) {
+                Debug.LogWarning("GoapPlanner.cs: No actions available for planning!");
                 return null;
             }
+
 
             // Step 2: Set up our search.
             var statesToExplore = new List<ActionPlanNode>(); // States we haven't looked at yet.
@@ -62,7 +62,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
             startState.EstimatedCostToGoal = CalculateHeuristic(startState.State, goalState);
             statesToExplore.Add(startState);
 
-            // Step 4: Main planning loop
+            // Step 4: Main planning loop.
             int iterations = 0;
             while (statesToExplore.Count > 0 && iterations < _maxSearchIterations) {
                 iterations++;
@@ -72,7 +72,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
                 statesToExplore.Remove(currentNode);
                 exploredStates.Add(currentNode);
 
-                // Check if we've reached our goal
+                // Check if we've reached our goal.
                 if (HasReachedGoal(currentNode.State, goalState)) {
                     if (_showDebugLogs)
                         Debug.Log($"GoapPlanner.cs: Found a plan after {iterations} iterations!");
@@ -81,22 +81,22 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
                 // Try each possible action from this state.
                 foreach (var action in possibleActions) {
-                    // Skip if we can't do this action right now.
-                    if (!CanPerformAction(action, currentNode.State))
+                    // Skip if we can't do this action right now based on *static* prerequisites.
+                    if (!CanPerformAction(action, currentNode.State)) // This check remains important.
                         continue;
 
                     // Create a new state by doing this action.
                     var newState = ApplyActionEffects(currentNode.State, action);
 
-                    // Skip if we've already seen this state
+                    // Skip if we've already seen this state.
                     if (IsStateInList(newState, exploredStates))
                         continue;
 
-                    // Calculate how good this new state is
+                    // Calculate how good this new state is.
                     float costToReachThisState = currentNode.CostSoFar + action.GetCost();
                     float estimatedCostToGoal = CalculateHeuristic(newState, goalState);
 
-                    // Create a new node for this state
+                    // Create a new node for this state.
                     var newStateNode = new ActionPlanNode {
                         Parent = currentNode,
                         Action = action,
@@ -105,13 +105,13 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
                         EstimatedCostToGoal = estimatedCostToGoal
                     };
 
-                    // Add to our list of states to explore
+                    // Add to our list of states to explore.
                     AddOrUpdateState(newStateNode, statesToExplore);
                 }
             }
 
             if (_showDebugLogs)
-                Debug.LogWarning($"GoapPlanner.cs: Failed to find a plan after an iteration!");
+                Debug.LogWarning($"GoapPlanner.cs: Failed to find a plan after {iterations} iterations!");
             return null;
         }
 
@@ -166,10 +166,14 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// </summary>
         private bool CanPerformAction(GoapAction action, Dictionary<WorldStateKey, bool> currentState) {
             foreach (var prereq in action.GetPrerequisites()) {
-                if (!currentState.ContainsKey(prereq.Key) || currentState[prereq.Key] != prereq.Value)
+                bool keyExists = currentState.ContainsKey(prereq.Key);
+                bool valueMatches = keyExists && currentState[prereq.Key] == prereq.Value;
+
+                Debug.Log($"Planner Check: Action='{action.GetType().Name}', Prereq='{prereq.Key}:{prereq.Value}', StateHasKey={keyExists}, StateValueMatches={valueMatches}");
+
+                if (!keyExists || !valueMatches)
                     return false;
             }
-
             return true;
         }
 

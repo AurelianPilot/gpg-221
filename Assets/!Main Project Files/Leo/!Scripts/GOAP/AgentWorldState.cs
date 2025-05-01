@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,6 +25,28 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
         #endregion
 
+        private void Awake()
+        {
+            InitializeWorldState();
+        }
+        
+        /// <summary>
+        /// Ensures all possible world state keys exist in the dictionary, defaulting to false.
+        /// </summary>
+        private void InitializeWorldState()
+        {
+            Debug.Log($"Initializing World State for {gameObject.name}...");
+            // Get all possible keys defined in the WorldStateKey enum.
+            foreach (WorldStateKey key in Enum.GetValues(typeof(WorldStateKey)))
+            {
+                // Add the key with a default value of 'false' if it doesn't already exist.
+                if (!_states.ContainsKey(key))
+                {
+                    _states.Add(key, false);
+                }
+            }
+        }
+        
         #region State Accessors
 
         /// <summary>

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using _Main_Project_Files.Leo._Scripts.GOAP.Actions;
+using _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems;
 using UnityEngine;
 
 namespace _Main_Project_Files.Leo._Scripts.GOAP
@@ -18,39 +19,58 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
         [Header("- GOAP Core")]
         [SerializeField] private AgentWorldState agentWorldState;
+
         [SerializeField] private List<GoapAction> availableActions;
         private GoapGoal _currentGoal;
         private GoapPlanner _planner;
 
         [Header("- State")]
         private Queue<GoapAction> _currentPlan = new();
+
         private bool _isExecutingPlan;
         private GoapAction _currentExecutingAction = null;
 
         [Header("- Debugging")]
         [SerializeField] private bool logPlan;
+
         [SerializeField] private bool logExecution;
-        
-        public enum AgentRole { Warrior, Healer }
-        public enum TeamID { TeamA, TeamB }
+
+        public enum AgentRole
+        {
+            Warrior,
+            Healer
+        }
+
+        public enum TeamID
+        {
+            TeamA,
+            TeamB
+        }
+
         public GladiatorAgent CurrentTargetEnemy { get; set; }
 
 
         [Header("- Team & Role")]
         public TeamID teamID;
+
         public AgentRole agentRole;
         public List<GladiatorAgent> knownAllies = new();
         public List<GladiatorAgent> knownEnemies = new();
-        
 
         #endregion
 
         #region Unity Lifecycle
 
+        /// <summary>
+        /// Unity Awake.
+        /// </summary>
         private void Awake() {
             InitializeComponents();
         }
 
+        /// <summary>
+        /// Unity Start.
+        /// </summary>
         private void Start() {
             // TODO: Replace this placeholder with a proper Goal definition.
             SetInitialGoal();
@@ -82,24 +102,20 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// <summary>
         /// Sets the initial goal for the agent depending on its role.
         /// </summary>
-        private void SetInitialGoal()
-        {
+        private void SetInitialGoal() {
             if (agentWorldState == null) agentWorldState = GetComponent<AgentWorldState>();
 
             agentWorldState.SetState(WorldStateKey.IsWarriorRole, agentRole == AgentRole.Warrior);
             agentWorldState.SetState(WorldStateKey.IsHealerRole, agentRole == AgentRole.Healer);
 
-            if (agentRole == AgentRole.Warrior)
-            {
+            if (agentRole == AgentRole.Warrior) {
                 //_currentGoal = new GoapGoal("AttackEnemiesGoal", WorldStateKey.EnemyDetected, false, 5);
                 _currentGoal = new GoapGoal("EngageInCombatGoal", WorldStateKey.IsInCombat, true, 5);
             }
-            else if (agentRole == AgentRole.Healer)
-            {
+            else if (agentRole == AgentRole.Healer) {
                 _currentGoal = new GoapGoal("KeepAlliesHealthyGoal", WorldStateKey.AllyNeedsHealing, false, 10);
             }
-            else
-            {
+            else {
                 _currentGoal = new GoapGoal("WanderGoal", WorldStateKey.IsWandering, true, 1);
             }
 
@@ -150,15 +166,74 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         private IEnumerator HandleCompletedGoal() {
             if (logExecution) {
                 Debug.Log(
-                    $"GladiatorAgent.cs: Goal '{_currentGoal.GoalName}' already met. Idling or finding new goal...");
+                    $"GladiatorAgent.cs: Goal '{_currentGoal.GoalName}' already met. Checking for new goals or wandering...");
             }
 
-            // TODO: Implement logic to find a new goal if current one is met.
+            // Check if there's anything for the agent to do.
+            if (IsAgentIdle() && _currentGoal.GoalName != "WanderGoal") {
+                // If nothing to do, switch to wandering.
+                SwitchToWanderingGoal();
+            }
+            else {
+                // Small wait to avoid checking too frequently.
+                yield return new WaitForSeconds(0.5f);
+            }
 
-            // ! I currently commented this because I wanna add an "afterActionCompletedCooldown" in the main GoapAction.cs class,
-            // so each action has a cooldown before the next action can be executed.
-            // yield return new WaitForSeconds(1f);
             yield return null;
+        }
+
+        /// <summary>
+        /// Checks if the agent is currently idle (no combat targets and no other priority goals)
+        /// </summary>
+        private bool IsAgentIdle() {
+            // For warriors, we're idle if we have no valid enemy targets.
+            if (agentRole == AgentRole.Warrior) {
+                // Check if we have valid enemies.
+                bool hasValidEnemies = false;
+                foreach (var enemy in knownEnemies) {
+                    if (enemy != null) {
+                        var enemyHealth = enemy.GetComponent<AgentHealthSystem>();
+                        if (enemyHealth != null && !enemyHealth.IsDead) {
+                            hasValidEnemies = true;
+                            break;
+                        }
+                    }
+                }
+
+                return !hasValidEnemies;
+            }
+
+            // For healers, we're idle if no allies need healing
+            if (agentRole == AgentRole.Healer) {
+                // Could check for allies needing healing here
+                return !agentWorldState.GetState(WorldStateKey.AllyNeedsHealing);
+            }
+
+            // By default, if we're not doing anything specific, we're idle
+            return true;
+        }
+
+        /// <summary>
+        /// Switches the agent to a wandering goal
+        /// </summary>
+        private void SwitchToWanderingGoal() {
+            Debug.Log($"{gameObject.name} has nothing to do, switching to wandering goal");
+
+            // If already wandering, don't switch
+            if (_currentGoal.GoalName == "WanderGoal")
+                return;
+
+            // Stop current plan if any
+            AbortCurrentPlan();
+
+            // Set wandering goal
+            _currentGoal = new GoapGoal("WanderGoal", WorldStateKey.IsWandering, true, 1);
+
+            // Reset relevant world states
+            agentWorldState.SetState(WorldStateKey.IsWandering, false);
+
+            // Log the change
+            Debug.Log($"{gameObject.name} switching to goal: {_currentGoal.GoalName}");
         }
 
         /// <summary>
@@ -266,7 +341,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
             return true;
         }
-        
+
         /// <summary>
         /// Abouts current plan.
         /// </summary>
@@ -326,15 +401,14 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         }
 
         #endregion
-        
+
         #region Debug Methods
 
         /// <summary>
         /// Gets the agent's current goal for debugging purposes.
         /// </summary>
         /// <returns>The current goal or null if no goal is set.</returns>
-        public GoapGoal GetCurrentGoal()
-        {
+        public GoapGoal GetCurrentGoal() {
             return _currentGoal;
         }
 
@@ -346,8 +420,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// Gets the agent's current executing action for debugging purposes.
         /// </summary>
         /// <returns>The current action being executed or null if no action is running.</returns>
-        public GoapAction GetCurrentAction()
-        {
+        public GoapAction GetCurrentAction() {
             return _currentExecutingAction;
         }
 
@@ -355,13 +428,11 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// Gets the agent's current plan as a list.
         /// </summary>
         /// <returns>A list of actions in the current plan or empty list if no plan exists.</returns>
-        public List<GoapAction> GetCurrentPlan()
-        {
-            if (_currentPlan != null && _currentPlan.Count > 0)
-            {
+        public List<GoapAction> GetCurrentPlan() {
+            if (_currentPlan != null && _currentPlan.Count > 0) {
                 return new List<GoapAction>(_currentPlan);
             }
-    
+
             return new List<GoapAction>();
         }
 
@@ -369,8 +440,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         /// Gets the execution status of the agent.
         /// </summary>
         /// <returns>True if the agent is currently executing a plan, false otherwise.</returns>
-        public bool IsExecutingPlan()
-        {
+        public bool IsExecutingPlan() {
             return _isExecutingPlan;
         }
 

@@ -185,12 +185,40 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         private IEnumerator MoveToTarget(bool success) {
             success = false;
 
+            // Get reference to GladiatorAgent component
+            GladiatorAgent gladiatorAgent = GetComponent<GladiatorAgent>();
+
             // Start movement.
             _pathfindingAgent.FollowPath(_currentWanderTarget);
             float timeStartedMoving = Time.time;
 
             // Wait until reaching destination or timeout.
             while (Vector3.Distance(transform.position, _currentWanderTarget) > arrivalDistance) {
+                // Check if we detected an enemy - if so, stop wandering.
+                if (gladiatorAgent != null &&
+                    gladiatorAgent.agentRole == GladiatorAgent.AgentRole.Warrior &&
+                    gladiatorAgent.knownEnemies.Count > 0) {
+                    // Check if any enemies are alive.
+                    bool hasAliveEnemy = false;
+                    foreach (var enemy in gladiatorAgent.knownEnemies) {
+                        if (enemy != null) {
+                            var enemyHealth = enemy.GetComponent<Status_Systems.AgentHealthSystem>();
+                            if (enemyHealth != null && !enemyHealth.IsDead) {
+                                hasAliveEnemy = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (hasAliveEnemy) {
+                        Debug.Log(
+                            $"WanderAction.cs: {gameObject.name} detected enemies while wandering. Stopping wander.");
+                        _actionIsRunning = false;
+                        gladiatorAgent.AbortCurrentPlan();
+                        yield break;
+                    }
+                }
+
                 // Check if movement failed or agent is stuck.
                 if (HasMovementFailed()) {
                     yield return new WaitForSeconds(0.1f);

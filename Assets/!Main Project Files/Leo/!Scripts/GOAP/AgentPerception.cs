@@ -47,7 +47,19 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
                     {
                         _localAgent.knownEnemies.Add(detectedAgent);
                         UpdateWorldStateEnemyDetected();
-                         Debug.Log($"{_localAgent.name} detected ENEMY: {detectedAgent.name}");
+                        Debug.Log($"{_localAgent.name} detected ENEMY: {detectedAgent.name}");
+                
+                        // If agent is wandering, switch back to combat goal.
+                        if (_localAgent.GetCurrentGoal()?.GoalName == "WanderGoal")
+                        {
+                            // If this is a warrior, switch back to combat goal.
+                            if (_localAgent.agentRole == GladiatorAgent.AgentRole.Warrior)
+                            {
+                                Debug.Log($"{_localAgent.name} detected enemy while wandering, switching back to combat goal");
+                                _localAgent.AbortCurrentPlan();
+                                // This will force a replan on the next frame.
+                            }
+                        }
                     }
                 }
                 else
@@ -57,7 +69,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
                     {
                         _localAgent.knownAllies.Add(detectedAgent);
                         UpdateWorldStateAllyDetected();
-                         Debug.Log($"{_localAgent.name} detected ALLY: {detectedAgent.name}");
+                        Debug.Log($"{_localAgent.name} detected ALLY: {detectedAgent.name}");
                     }
                 }
             }

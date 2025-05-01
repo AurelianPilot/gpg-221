@@ -208,6 +208,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Status_Systems
             }
 
             OnAgentDied.Invoke();
+            Destroy(gameObject);
         }
 
         /// <summary>

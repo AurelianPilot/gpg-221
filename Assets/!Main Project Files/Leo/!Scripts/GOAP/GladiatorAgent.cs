@@ -33,12 +33,15 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         
         public enum AgentRole { Warrior, Healer }
         public enum TeamID { TeamA, TeamB }
+        public GladiatorAgent CurrentTargetEnemy { get; set; }
+
 
         [Header("- Team & Role")]
         public TeamID teamID;
         public AgentRole agentRole;
         public List<GladiatorAgent> knownAllies = new();
         public List<GladiatorAgent> knownEnemies = new();
+        
 
         #endregion
 

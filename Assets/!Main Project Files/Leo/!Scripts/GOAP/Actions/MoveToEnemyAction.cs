@@ -86,10 +86,9 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
             GladiatorAgent targetEnemy = _gladiatorAgent.CurrentTargetEnemy;
 
             if (targetEnemy == null) {
-                // Check if target is still valid when action starts
                 Debug.LogWarning($"MoveToEnemyAction ({gameObject.name}): Target was null when PerformAction started.");
-                _actionIsRunning = false; // Ensure state is reset if we exit early
-                AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false); // Not in range if no target
+                _actionIsRunning = false;
+                AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
                 yield break;
             }
 
@@ -99,6 +98,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
             float timeStartedMoving = Time.time;
             Vector3 lastTargetPosition = targetEnemy.transform.position;
 
+            // Initial path calculation.
             _pathfindingAgent.FollowPath(lastTargetPosition);
 
             while (_actionIsRunning) {
@@ -115,6 +115,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                 Vector3 currentTargetPos = targetEnemy.transform.position;
                 float distanceToTarget = Vector3.Distance(transform.position, currentTargetPos);
 
+                // If we're in range, stop moving and mark success.
                 if (distanceToTarget <= targetRange) {
                     Debug.Log(
                         $"MoveToEnemyAction ({gameObject.name}): Reached target range ({distanceToTarget:F2}m <= {targetRange}m). Stopping.");
@@ -122,6 +123,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                     yield break;
                 }
 
+                // Check if movement failed.
                 if (!_pathfindingAgent.IsFollowingPath() &&
                     Vector3.Distance(transform.position, _pathfindingAgent.GetTargetPosition()) > arrivalDistance) {
                     yield return new WaitForSeconds(0.1f);
@@ -135,6 +137,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                     }
                 }
 
+                // Check for timeout.
                 if (Time.time > timeStartedMoving + moveTimeout) {
                     Debug.LogWarning(
                         $"MoveToEnemyAction ({gameObject.name}): Movement towards {targetEnemy.name} timed out!");
@@ -143,11 +146,14 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                     yield break;
                 }
 
-                if (Vector3.Distance(currentTargetPos, lastTargetPosition) > 1.0f) {
+                // Constantly updates the path to follow the moving target (this fixes some issues guys don't remove it, in any case it might need optimization).
+                // ? Only recalculate if target has moved significantly () to avoid performance issues.
+                if (Vector3.Distance(currentTargetPos, lastTargetPosition) > 0.01f) {
+                    Debug.Log(
+                        $"MoveToEnemyAction ({gameObject.name}): Target moved significantly, recalculating path.");
                     _pathfindingAgent.FollowPath(currentTargetPos);
                     lastTargetPosition = currentTargetPos;
                 }
-
 
                 yield return null;
             }

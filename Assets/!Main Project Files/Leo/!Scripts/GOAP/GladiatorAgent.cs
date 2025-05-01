@@ -266,6 +266,18 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
 
             return true;
         }
+        
+        /// <summary>
+        /// Abouts current plan.
+        /// </summary>
+        public void AbortCurrentPlan() {
+            if (_isExecutingPlan) {
+                Debug.Log($"GladiatorAgent.cs: Aborting current plan for {gameObject.name}");
+                _isExecutingPlan = false;
+                _currentPlan.Clear();
+                _currentExecutingAction = null;
+            }
+        }
 
         /// <summary>
         /// Completes the plan execution and resets execution state.

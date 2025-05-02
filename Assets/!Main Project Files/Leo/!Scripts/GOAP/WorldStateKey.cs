@@ -33,6 +33,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP
         // Movement Related.
         IsAtTargetLocation,
         IsWandering,
+        IsRunningAway,
         
         // ! Role of the agent !
         IsHealerRole,

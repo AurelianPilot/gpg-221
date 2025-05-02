@@ -9,7 +9,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
     [RequireComponent(typeof(GladiatorAgent))]
     [RequireComponent(typeof(AgentWorldState))]
     [RequireComponent(typeof(PathFindingAgent))]
-    public class MoveToEnemyAction : GoapAction
+    public class MoveAwayFromEnemyAction : GoapAction
     {
         [Header("- Movement Settings")]
         [Tooltip(

@@ -9,7 +9,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
     [RequireComponent(typeof(GladiatorAgent))]
     [RequireComponent(typeof(AgentWorldState))]
     [RequireComponent(typeof(PathFindingAgent))]
-    public class MoveAwayFromEnemyAction : GoapAction
+    public class MoveToEnemyArcherAction : GoapAction
     {
         [Header("- Movement Settings")]
         [Tooltip(
@@ -50,7 +50,6 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         protected override void SetUpPreRequisites() {
             AddPrerequisite(WorldStateKey.EnemyDetected, true);
             AddPrerequisite(WorldStateKey.HasEnemyTarget, true);
-            AddPrerequisite(WorldStateKey.IsRunningAway, true);
         }
 
         /// <summary>
@@ -58,6 +57,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
         /// </summary>
         protected override void SetUpEffects() {
             AddEffect(WorldStateKey.IsInAttackRange, true);
+            AddEffect(WorldStateKey.IsRunningAway, true);
         }
 
         /// <summary>
@@ -90,6 +90,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                 Debug.LogWarning($"MoveToEnemyAction ({gameObject.name}): Target was null when PerformAction started.");
                 _actionIsRunning = false;
                 AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
+                AgentWorldState.SetState(WorldStateKey.IsRunningAway, false);
                 yield break;
             }
 
@@ -110,6 +111,7 @@ namespace _Main_Project_Files.Leo._Scripts.GOAP.Actions
                     _actionIsRunning = false;
                     AgentWorldState.SetState(WorldStateKey.HasEnemyTarget, false);
                     AgentWorldState.SetState(WorldStateKey.IsInAttackRange, false);
+                    AgentWorldState.SetState(WorldStateKey.IsRunningAway, true);
                     yield break;
                 }
 
